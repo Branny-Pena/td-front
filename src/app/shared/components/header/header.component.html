@@ -1,0 +1,64 @@
+<header class="flex items-center justify-between p-4 td-app-bar border-b">
+  <div class="flex items-center gap-2">
+    @if (showLogo()) {
+      @if (logoSrc(); as src) {
+        <img [src]="src" alt="" class="h-6 w-auto shrink-0" />
+      } @else {
+        @if (themeId() === 'mercedes') {
+          <svg
+            class="w-6 h-6 shrink-0"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M12 12 L12 3"></path>
+            <path d="M12 12 L4.5 16.5"></path>
+            <path d="M12 12 L19.5 16.5"></path>
+          </svg>
+        } @else if (themeId() === 'sap') {
+          <svg
+            viewBox="0 0 24 24"
+            class="w-6 h-6 shrink-0"
+            aria-hidden="true">
+            <path
+              d="M13 2L3 14h7l-1 8 10-12h-7l1-8Z"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linejoin="round" />
+          </svg>
+        }
+      }
+    }
+    @if (themeId() !== 'stellantis' && themeId() !== 'andes') {
+      <span class="text-lg font-semibold">{{ brandName() }}</span>
+    }
+  </div>
+
+  @if (showHomeLink()) {
+    <a
+      routerLink="/"
+      class="text-sm font-medium opacity-90 hover:opacity-100 focus:outline-none focus-visible:td-ring-primary rounded-[10px] px-3 py-2 transition inline-flex items-center gap-2">
+      <svg viewBox="0 0 20 20" class="w-4 h-4" aria-hidden="true">
+        <path
+          d="M11.5 5.5L7 10l4.5 4.5"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round" />
+        <path
+          d="M7 10h8"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round" />
+      </svg>
+      Salir
+    </a>
+  }
+</header>

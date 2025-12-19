@@ -1,0 +1,81 @@
+<app-wizard-layout
+  [currentStep]="3"
+  [nextDisabled]="!isValid()"
+  (backClick)="onBack()"
+  (nextClick)="onNext()">
+
+  <div class="flex flex-col gap-4">
+    <app-content-card title="Resumen del Cliente">
+      @if (customer(); as u) {
+        <dl class="grid grid-cols-[auto,minmax(0,1fr)] gap-x-10 gap-y-1 text-sm">
+          <dt class="text-gray-600">Nombre:</dt>
+          <dd class="font-medium min-w-0 break-words">{{ u.firstName }} {{ u.lastName }}</dd>
+          <dt class="text-gray-600">DNI:</dt>
+          <dd class="font-medium min-w-0 break-words">{{ u.dni }}</dd>
+          @if (u.phoneNumber) {
+            <dt class="text-gray-600">Teléfono:</dt>
+            <dd class="font-medium min-w-0 break-words">{{ u.phoneNumber }}</dd>
+          }
+          @if (u.email) {
+            <dt class="text-gray-600">Correo:</dt>
+            <dd class="font-medium min-w-0 break-words">{{ u.email }}</dd>
+          }
+        </dl>
+      }
+    </app-content-card>
+
+    <app-content-card title="Resumen del Vehículo">
+      @if (vehicle(); as v) {
+        <dl class="grid grid-cols-[auto,minmax(0,1fr)] gap-x-10 gap-y-1 text-sm">
+          <dt class="text-gray-600">Marca:</dt>
+          <dd class="font-medium min-w-0 break-words">{{ v.make }}</dd>
+          <dt class="text-gray-600">Modelo:</dt>
+          <dd class="font-medium min-w-0 break-words">{{ v.model }}</dd>
+          <dt class="text-gray-600">Placa:</dt>
+          <dd class="font-medium min-w-0 break-words">{{ v.licensePlate }}</dd>
+          @if (v.vinNumber) {
+            <dt class="text-gray-600">VIN:</dt>
+            <dd class="font-medium min-w-0 break-words">{{ v.vinNumber }}</dd>
+          }
+        </dl>
+      }
+      @if (location(); as loc) {
+        <dl class="grid grid-cols-[auto,minmax(0,1fr)] gap-x-6 gap-y-1 text-sm mt-1">
+          <dt class="text-gray-600">Ubicación:</dt>
+          <dd class="font-medium min-w-0 break-words">{{ loc.locationName }}</dd>
+        </dl>
+      }
+    </app-content-card>
+
+    <app-content-card title="Firma Digital">
+      <p class="text-sm text-gray-600 mb-4">
+        Al firmar a continuación, reconozco que he recibido el vehículo para una prueba de manejo y acepto los términos y condiciones.
+      </p>
+
+      @if (signatureData(); as sig) {
+        <div class="border border-gray-300 rounded-lg p-4 bg-gray-50">
+          <img [src]="sig" alt="Su firma" class="max-w-full h-auto" />
+          <p class="text-sm text-green-600 mt-2">Firma aceptada</p>
+        </div>
+      } @else {
+        <app-signature-pad (signatureAccepted)="onSignatureAccepted($event)" />
+      }
+    </app-content-card>
+  </div>
+
+  <app-modal-dialog
+    [isOpen]="showSaveDialog()"
+    title="Guardar progreso"
+    rejectText="Continuar sin guardar"
+    acceptText="Guardar y continuar"
+    [acceptDisabled]="isSavingDraft()"
+    [rejectDisabled]="isSavingDraft()"
+    (closed)="onSaveDialogClosed()"
+    (reject)="continueWithoutSaving()"
+    (accept)="saveAndContinue()">
+    <p class="text-sm text-gray-800">
+      ¿Deseas guardar la información actual de la prueba de manejo para continuar más tarde?
+    </p>
+  </app-modal-dialog>
+
+</app-wizard-layout>

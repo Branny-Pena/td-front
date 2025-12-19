@@ -1,0 +1,33 @@
+:host {
+  display: contents;
+}
+
+.td-message-toast {
+  background-color: var(--sapIndicationColor_9_Background, #32363a);
+  border: 0;
+  border-radius: var(--sapElement_BorderCornerRadius, 0.5rem);
+  box-shadow: var(--sapContent_Lite_Shadow, 0 0.5rem 1rem rgba(0, 0, 0, 0.2));
+  box-sizing: border-box;
+  color: var(--sapContent_ContrastTextColor, #fff);
+  display: inline-flex;
+  flex-direction: column;
+  font-family: var(--sapFontFamily, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Arial);
+  font-size: var(--sapFontSize, 0.875rem);
+  line-height: 1.25rem;
+  margin: 0;
+  max-width: 15rem;
+  padding: 1rem;
+  text-align: left;
+  width: auto;
+}
+
+.td-message-toast__title {
+  font-family: var(--sapFontBoldFamily, var(--sapFontFamily, inherit));
+  font-size: 0.8125rem;
+  line-height: 1.125rem;
+  margin: 0;
+}
+
+.td-message-toast__message {
+  margin: 0.125rem 0 0;
+}

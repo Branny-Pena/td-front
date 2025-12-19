@@ -1,0 +1,188 @@
+<app-wizard-layout
+  [currentStep]="1"
+  [totalSteps]="1"
+  [showStepper]="false"
+  [showBottomNav]="false"
+  [showStartButton]="false"
+  [showHeaderHomeLink]="false">
+  <div class="max-w-3xl mx-auto">
+    <app-content-card title="Encuesta de satisfacción">
+      @if (isLoading()) {
+        <div class="space-y-3">
+          <div class="h-8 rounded-lg border border-gray-200 bg-gray-50 animate-pulse"></div>
+          <div class="h-24 rounded-lg border border-gray-200 bg-gray-50 animate-pulse"></div>
+          <div class="h-24 rounded-lg border border-gray-200 bg-gray-50 animate-pulse"></div>
+        </div>
+      } @else {
+        @if (isSubmitted()) {
+          <div class="rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+            <div class="flex items-start gap-3">
+              <div class="h-10 w-10 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0">
+                <svg viewBox="0 0 20 20" class="h-5 w-5" aria-hidden="true">
+                  <path
+                    d="M16.7 5.4a.9.9 0 0 1 0 1.3l-7.3 7.3a.9.9 0 0 1-1.3 0L3.3 9.1a.9.9 0 1 1 1.3-1.3l3.7 3.7 6.6-6.6a.9.9 0 0 1 1.3 0Z"
+                    fill="currentColor" />
+                </svg>
+              </div>
+              <div class="min-w-0">
+                <div class="text-sm font-semibold text-emerald-900">¡Gracias!</div>
+                <div class="text-sm text-emerald-800 mt-1">
+                  Tu encuesta fue enviada correctamente.
+                </div>
+              </div>
+            </div>
+          </div>
+        } @else {
+          @if (version(); as v) {
+            <div class="mb-4">
+              <div class="text-sm font-semibold text-gray-900">{{ v.survey?.name }}</div>
+              @if (v.survey?.brand) {
+                <div class="text-sm text-gray-600 mt-1">Marca: {{ v.survey?.brand }}</div>
+              }
+              @if (v.notes) {
+                <div class="text-xs text-gray-500 mt-1">{{ v.notes }}</div>
+              }
+            </div>
+
+            @if (form(); as fg) {
+              <form [formGroup]="fg" class="space-y-4" (ngSubmit)="submit()">
+                @for (q of questions(); track q.id) {
+                  <div class="rounded-lg border border-gray-200 bg-white p-4">
+                    <div class="flex items-start justify-between gap-3">
+                      <div class="min-w-0">
+                        <div class="text-sm font-semibold text-gray-900">
+                          {{ q.orderIndex }}. {{ q.label }}
+                          @if (q.isRequired) {
+                            <span class="ml-2 text-xs font-semibold text-amber-700 bg-amber-100 rounded-full px-2 py-0.5">
+                              Requerida
+                            </span>
+                          }
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1">
+                          {{ typeLabel(q.type) }} • {{ questionHint(q) }}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="mt-3">
+                      @switch (q.type) {
+                        @case ('number') {
+                          @let min = (q.minValue ?? 1);
+                          @let max = (q.maxValue ?? 10);
+                          @let ctrl = fg.get('q_' + q.id);
+                          @let raw = ctrl?.value;
+                          @let current = (raw === null || raw === undefined || raw === '' ? null : +raw);
+                          @let percent = sliderPercent(current, min, max);
+
+                          <div class="flex items-center justify-between gap-3">
+                            <div class="text-xs text-gray-500">
+                              Escala {{ min }}–{{ max }}
+                            </div>
+                            <div class="text-sm text-gray-700">
+                              Valor:
+                              <span class="font-semibold text-gray-900">{{ current ?? '-' }}</span>
+                            </div>
+                          </div>
+
+                          <div class="bg-white py-4">
+                            <div class="relative w-full">
+                              <input
+                                type="range"
+                                class="td-slider-input absolute inset-0 z-20 w-full h-10 opacity-0 cursor-pointer"
+                                [min]="min"
+                                [max]="max"
+                                [value]="current ?? min"
+                                [attr.aria-required]="q.isRequired ? 'true' : null"
+                                [attr.aria-valuenow]="current ?? min"
+                                [attr.aria-valuemin]="min"
+                                [attr.aria-valuemax]="max"
+                                (input)="ctrl?.setValue(($any($event.target).valueAsNumber)); ctrl?.markAsDirty(); ctrl?.markAsTouched()" />
+
+                              <div class="relative h-10 flex items-center pointer-events-none">
+                                <div class="relative w-full h-1 rounded-full bg-slate-200">
+                                  <div class="absolute left-0 top-0 h-1 rounded-full td-bg-primary" [style.width.%]="percent"></div>
+
+                                  <div class="absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full td-bg-primary"></div>
+                                  <div class="absolute top-1/2 right-0 translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-slate-700"></div>
+
+                                  <div
+                                    class="td-slider-thumb absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-11 h-7 bg-white border-2 td-border-primary rounded-full shadow-sm flex items-center justify-center"
+                                    [style.left.%]="percent">
+                                    <div class="flex items-center gap-1">
+                                      <span class="w-0 h-0 border-y-[5px] border-y-transparent border-r-[6px] border-r-[color:var(--td-primary)]"></span>
+                                      <span class="w-0 h-0 border-y-[5px] border-y-transparent border-l-[6px] border-l-[color:var(--td-primary)]"></span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        }
+                        @case ('text') {
+                          <textarea
+                            rows="4"
+                            [formControlName]="'q_' + q.id"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 td-ring-primary"
+                            placeholder="Escribe tu respuesta"></textarea>
+                        }
+                        @case ('option_single') {
+                          <div class="space-y-2">
+                            @for (opt of (q.options ?? []); track opt.id) {
+                              <label class="flex items-start gap-3 p-2 rounded-md border border-gray-200 hover:bg-gray-50 cursor-pointer">
+                                <input
+                                  type="radio"
+                                  class="mt-1"
+                                  [name]="'q_' + q.id"
+                                  [value]="opt.id"
+                                  [formControlName]="'q_' + q.id" />
+                                <span class="text-sm text-gray-900">{{ opt.label }}</span>
+                              </label>
+                            }
+                          </div>
+                        }
+                        @case ('option_multi') {
+                          <div class="space-y-2">
+                            @for (opt of (q.options ?? []); track opt.id) {
+                              <label class="flex items-start gap-3 p-2 rounded-md border border-gray-200 hover:bg-gray-50 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  class="mt-1"
+                                  [checked]="isChecked(q.id, opt.id)"
+                                  (change)="toggleMulti(q.id, opt.id)" />
+                                <span class="text-sm text-gray-900">{{ opt.label }}</span>
+                              </label>
+                            }
+                          </div>
+                        }
+                      }
+
+                      @if (fg.get('q_' + q.id)?.touched && fg.get('q_' + q.id)?.invalid) {
+                        <div class="mt-2 text-sm text-red-600">
+                          Este campo es obligatorio.
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+
+                <div class="flex items-center justify-end gap-2 pt-2">
+                  <button type="submit" class="td-btn td-btn--emphasized" [disabled]="isSubmitting()">
+                    {{ isSubmitting() ? 'Enviando...' : 'Enviar encuesta' }}
+                  </button>
+                </div>
+              </form>
+            } @else {
+              <div class="rounded-lg border border-gray-200 bg-white p-4 text-gray-700">
+                No se pudo inicializar el formulario de la encuesta.
+              </div>
+            }
+          } @else {
+            <div class="rounded-lg border border-gray-200 bg-white p-4 text-gray-700">
+              No hay una encuesta disponible para este enlace.
+            </div>
+          }
+        }
+      }
+    </app-content-card>
+  </div>
+</app-wizard-layout>

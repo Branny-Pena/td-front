@@ -1,0 +1,101 @@
+<app-wizard-layout
+  [currentStep]="2"
+  [nextDisabled]="form.invalid"
+  [isLoading]="isLoading()"
+  (backClick)="onBack()"
+  (nextClick)="onNext()">
+
+  <app-content-card title="Información del Vehículo">
+    <form [formGroup]="form" class="flex flex-col gap-4">
+      <div class="flex justify-end mb-4">
+        <button
+          class="td-btn td-btn--standard"
+          type="button"
+          (click)="scanQr()"
+          aria-label="Escanear QR/Auto para autocompletar formulario">
+          Escanear QR/Auto
+        </button>
+      </div>
+
+      <app-barcode-scanner-dialog
+        [isOpen]="isScannerOpen()"
+        title="Escanear QR/Auto"
+        [formats]="vehicleScannerFormats"
+        (scanned)="onVehicleCodeScanned($event)"
+        (closed)="closeScanner()"
+      />
+
+      @if (errorMessage()) {
+        <div class="p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm" role="alert">
+          {{ errorMessage() }}
+        </div>
+      }
+
+      <div class="mb-4">
+        <label for="make" class="block text-sm font-medium text-gray-700 mb-1">
+          Marca *
+        </label>
+        <input
+          type="text"
+          id="make"
+          formControlName="make"
+          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 td-ring-primary disabled:bg-gray-100 disabled:text-gray-700 disabled:cursor-not-allowed"
+          aria-required="true" />
+      </div>
+
+      <div class="mb-4">
+        <label for="model" class="block text-sm font-medium text-gray-700 mb-1">
+          Modelo *
+        </label>
+        <input
+          type="text"
+          id="model"
+          formControlName="model"
+          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 td-ring-primary disabled:bg-gray-100 disabled:text-gray-700 disabled:cursor-not-allowed"
+          aria-required="true" />
+      </div>
+
+      <div class="mb-4">
+        <label for="licensePlate" class="block text-sm font-medium text-gray-700 mb-1">
+          Placa *
+          @if (isLookupLoading()) {
+            <span class="ml-2 text-xs td-text-primary">Buscando...</span>
+          }
+        </label>
+        <input
+          type="text"
+          id="licensePlate"
+          formControlName="licensePlate"
+          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 td-ring-primary"
+          aria-required="true" />
+      </div>
+
+      <div class="mb-4">
+        <label for="vinNumber" class="block text-sm font-medium text-gray-700 mb-1">
+          Número VIN
+          @if (isLookupLoading()) {
+            <span class="ml-2 text-xs td-text-primary">Buscando...</span>
+          }
+        </label>
+        <input
+          type="text"
+          id="vinNumber"
+          formControlName="vinNumber"
+          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 td-ring-primary" />
+      </div>
+
+      <div class="mb-4">
+        <label for="locationName" class="block text-sm font-medium text-gray-700 mb-1">
+          Ubicación *
+        </label>
+        <input
+          type="text"
+          id="locationName"
+          formControlName="locationName"
+          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 td-ring-primary"
+          aria-required="true" />
+      </div>
+    </form>
+  </app-content-card>
+
+</app-wizard-layout>

@@ -1,0 +1,16 @@
+.td-slider-input:focus-visible {
+  outline: none;
+}
+
+.td-slider-input:focus-visible ~ .relative .td-slider-thumb {
+  box-shadow: 0 0 0 0.125rem var(--sapContent_FocusColor, rgba(10, 110, 209, 0.35)), 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.td-slider-input:disabled {
+  cursor: not-allowed;
+}
+
+.td-slider-input:disabled ~ .relative .td-slider-thumb {
+  opacity: 0.6;
+}
+

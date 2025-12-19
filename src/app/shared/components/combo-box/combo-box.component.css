@@ -1,0 +1,7 @@
+.td-combobox-option:hover {
+  background-color: rgb(243 244 246); /* gray-100 */
+}
+
+.td-combobox-input:focus {
+  border-color: var(--td-primary);
+}

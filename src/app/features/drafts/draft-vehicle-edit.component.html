@@ -1,0 +1,89 @@
+<app-wizard-layout
+  [currentStep]="2"
+  [totalSteps]="6"
+  [showBack]="true"
+  [showNext]="true"
+  [backLabel]="'Volver'"
+  [nextLabel]="'Siguiente'"
+  [isLoading]="isLoading()"
+  [nextDisabled]="form.invalid || isPageLoading()"
+  (backClick)="onBack()"
+  (nextClick)="onNext()">
+  <div class="max-w-3xl mx-auto">
+    <app-content-card title="Editar vehículo (borrador)">
+      @if (isPageLoading()) {
+        <div class="h-32 rounded-lg border border-gray-200 bg-gray-50 animate-pulse"></div>
+      } @else {
+        <form class="space-y-4" [formGroup]="form">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Marca</label>
+            <input
+              type="text"
+              formControlName="make"
+              class="w-full rounded-[10px] border border-gray-300 bg-white px-3 py-2 focus:outline-none focus-visible:td-ring-primary"
+              placeholder="Marca" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Modelo</label>
+            <input
+              type="text"
+              formControlName="model"
+              class="w-full rounded-[10px] border border-gray-300 bg-white px-3 py-2 focus:outline-none focus-visible:td-ring-primary"
+              placeholder="Modelo" />
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Placa</label>
+              <input
+                type="text"
+                formControlName="licensePlate"
+                class="w-full rounded-[10px] border border-gray-300 bg-white px-3 py-2 focus:outline-none focus-visible:td-ring-primary"
+                placeholder="ABC-123" />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">VIN (opcional)</label>
+              <input
+                type="text"
+                formControlName="vinNumber"
+                class="w-full rounded-[10px] border border-gray-300 bg-white px-3 py-2 focus:outline-none focus-visible:td-ring-primary"
+                placeholder="VIN" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Ubicación</label>
+            <input
+              type="text"
+              formControlName="locationName"
+              class="w-full rounded-[10px] border border-gray-200 bg-gray-50 px-3 py-2 text-gray-700"
+              placeholder="Ubicación" />
+          </div>
+
+          @if (errorMessage()) {
+            <div class="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+              {{ errorMessage() }}
+            </div>
+          }
+        </form>
+      }
+    </app-content-card>
+  </div>
+</app-wizard-layout>
+
+<app-modal-dialog
+  [isOpen]="showConfirmDialog()"
+  title="Confirmar vehículo"
+  rejectText="Continuar sin confirmar"
+  acceptText="Confirmar y continuar"
+  [acceptDisabled]="isLoading()"
+  [rejectDisabled]="isLoading()"
+  (closed)="onConfirmDialogClosed()"
+  (reject)="continueWithoutConfirm()"
+  (accept)="confirmAndContinue()">
+  <p class="text-sm text-gray-800">
+    ¿Confirmas que la información del vehículo es correcta?
+  </p>
+</app-modal-dialog>

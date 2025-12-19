@@ -1,0 +1,90 @@
+<app-wizard-layout
+  [currentStep]="4"
+  [nextDisabled]="form.invalid"
+  (backClick)="onBack()"
+  (nextClick)="onNext()">
+
+  <app-content-card title="Evaluación de la Prueba de Manejo">
+    <form [formGroup]="form" class="flex flex-col gap-4">
+
+      <div class="mb-4">
+        <label for="purchaseProbability" class="block text-sm font-medium text-gray-700 mb-1">
+          Probabilidad de Compra: {{ form.controls.purchaseProbability.value }}% *
+        </label>
+
+        @let value = form.controls.purchaseProbability.value;
+        <div class="bg-white py-4">
+          <div class="relative w-full">
+            <input
+              id="purchaseProbability"
+              type="range"
+              formControlName="purchaseProbability"
+              min="0"
+              max="100"
+              class="td-slider-input absolute inset-0 z-20 w-full h-10 opacity-0 cursor-pointer"
+              aria-required="true"
+              [attr.aria-valuenow]="value"
+              aria-valuemin="0"
+              aria-valuemax="100" />
+
+            <div class="relative h-10 flex items-center pointer-events-none">
+              <div class="relative w-full h-1 rounded-full bg-slate-200">
+                <div class="absolute left-0 top-0 h-1 rounded-full td-bg-primary" [style.width.%]="value"></div>
+
+                <div class="absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full td-bg-primary"></div>
+                <div class="absolute top-1/2 right-0 translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-slate-700"></div>
+
+                <div
+                  class="td-slider-thumb absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-11 h-7 bg-white border-2 td-border-primary rounded-full shadow-sm flex items-center justify-center"
+                  [style.left.%]="value">
+                  <div class="flex items-center gap-1">
+                    <span class="w-0 h-0 border-y-[5px] border-y-transparent border-r-[6px] border-r-[color:var(--td-primary)]"></span>
+                    <span class="w-0 h-0 border-y-[5px] border-y-transparent border-l-[6px] border-l-[color:var(--td-primary)]"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-between text-xs text-gray-500 mt-1">
+          <span>0%</span>
+          <span>50%</span>
+          <span>100%</span>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <label for="estimatedPurchaseDate" class="block text-sm font-medium text-gray-700 mb-1">
+          Seleccione tiempo de intención de compra*
+        </label>
+        <app-combo-box
+          id="estimatedPurchaseDate"
+          formControlName="estimatedPurchaseDate"
+          ariaLabel="Seleccione tiempo de intención de compra"
+          placeholder="Escriba un texto"
+          [options]="estimatedPurchaseOptions"
+          [ariaRequired]="true" />
+      </div>
+
+      <div class="mb-4">
+        <label for="observations" class="block text-sm font-medium text-gray-700 mb-1">
+          Observaciones (opcional, máx. 250 caracteres)
+        </label>
+        <textarea
+          id="observations"
+          formControlName="observations"
+          rows="4"
+          maxlength="255"
+          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 td-ring-primary"
+          [attr.aria-invalid]="form.controls.observations.invalid && form.controls.observations.touched">
+        </textarea>
+        @if (form.controls.observations.errors?.['maxlength'] && form.controls.observations.touched) {
+          <small class="text-red-600">Las observaciones no pueden superar 255 caracteres</small>
+        }
+      </div>
+
+    </form>
+  </app-content-card>
+
+</app-wizard-layout>

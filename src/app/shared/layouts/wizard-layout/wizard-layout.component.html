@@ -1,0 +1,52 @@
+<div class="min-h-screen td-app-bg flex flex-col relative" [class.td-chrome-plain]="chromeVariant() === 'plain'">
+  <app-message-toast-container />
+  @if (showHeader()) {
+    <app-header
+      [currentStep]="currentStep()"
+      [totalSteps]="totalSteps()"
+      [showLogo]="showHeaderLogo()"
+      [showHomeLink]="showHeaderHomeLink()" />
+  }
+
+  @if (showStepper()) {
+    <app-step-indicator [currentStep]="currentStep()" [previousStep]="previousStep()" [totalSteps]="totalSteps()" />
+  }
+
+  <main class="flex-1 p-4 pb-[calc(6rem+env(safe-area-inset-bottom))] overflow-y-auto">
+    @if (showStartButton()) {
+      <div class="w-full max-w-3xl mx-auto mb-4">
+        <a routerLink="/inicio" class="td-btn td-btn--standard inline-flex items-center">
+          <svg viewBox="0 0 20 20" class="w-4 h-4" aria-hidden="true">
+            <path
+              d="M11.5 5.5L7 10l4.5 4.5"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round" />
+            <path
+              d="M7 10h8"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round" />
+          </svg>
+          <span>{{ startButtonLabel() }}</span>
+        </a>
+      </div>
+    }
+    <ng-content></ng-content>
+  </main>
+
+  @if (showBottomNav()) {
+    <app-bottom-nav
+      [showBack]="showBack()"
+      [showNext]="showNext()"
+      [nextDisabled]="nextDisabled()"
+      [nextLabel]="nextLabel()"
+      [backLabel]="backLabel()"
+      [isLoading]="isLoading()"
+      (backClick)="onBack()"
+      (nextClick)="onNext()" />
+  }
+</div>

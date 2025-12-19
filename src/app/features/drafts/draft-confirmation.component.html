@@ -1,0 +1,122 @@
+<app-wizard-layout
+  [currentStep]="6"
+  [totalSteps]="6"
+  [showBack]="true"
+  [showNext]="false"
+  [backLabel]="'Atrás'"
+  (backClick)="onBack()">
+  <div class="max-w-3xl mx-auto">
+    <app-content-card title="Confirmación">
+      @if (isPageLoading()) {
+        <div class="h-32 rounded-lg border border-gray-200 bg-gray-50 animate-pulse"></div>
+      } @else {
+        @if (!vehicleConfirmed()) {
+          <div class="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+            El vehículo no está confirmado. Puedes enviar el formulario como <span class="font-semibold">pendiente</span>.
+          </div>
+        }
+
+        @if (attemptedSubmit() && missingItems().length > 0) {
+          <div class="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+            <div class="font-semibold mb-1">Faltan datos por completar</div>
+            <ul class="list-disc pl-5 space-y-0.5">
+              @for (item of missingItems(); track item) {
+                <li>{{ item }}</li>
+              }
+            </ul>
+          </div>
+        }
+
+        @if (errorMessage()) {
+          <div class="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+            {{ errorMessage() }}
+          </div>
+        }
+
+        <div class="space-y-4">
+          <div>
+            <h3 class="font-semibold text-gray-800 mb-2">Cliente</h3>
+            @if (customer(); as u) {
+              <dl class="grid grid-cols-2 gap-2 text-sm">
+                <dt class="text-gray-600">Nombre:</dt>
+                <dd>{{ u.firstName }} {{ u.lastName }}</dd>
+                <dt class="text-gray-600">DNI:</dt>
+                <dd>{{ u.dni }}</dd>
+              </dl>
+            }
+          </div>
+
+          <div>
+            <h3 class="font-semibold text-gray-800 mb-2">Vehículo</h3>
+            @if (vehicle(); as v) {
+              <dl class="grid grid-cols-2 gap-2 text-sm">
+                <dt class="text-gray-600">Vehículo:</dt>
+                <dd>{{ v.make }} {{ v.model }}</dd>
+                <dt class="text-gray-600">Placa:</dt>
+                <dd>{{ v.licensePlate }}</dd>
+                <dt class="text-gray-600">Estado de registro:</dt>
+                <dd>{{ v.registerStatus }}</dd>
+              </dl>
+            }
+            @if (location(); as loc) {
+              <dl class="grid grid-cols-2 gap-2 text-sm mt-1">
+                <dt class="text-gray-600">Ubicación:</dt>
+                <dd>{{ loc.locationName }}</dd>
+              </dl>
+            }
+          </div>
+
+          <div>
+            <h3 class="font-semibold text-gray-800 mb-2">Firma</h3>
+            @if (trustedSignature(); as sig) {
+              <div class="flex justify-center sm:justify-start">
+                <img [src]="sig" alt="Firma" class="border border-gray-300 rounded-lg max-w-xs bg-gray-50 p-2" />
+              </div>
+            }
+          </div>
+
+          <div>
+            <h3 class="font-semibold text-gray-800 mb-2">Evaluación</h3>
+            @if (evaluation(); as ev) {
+              <dl class="grid grid-cols-2 gap-2 text-sm">
+                <dt class="text-gray-600">Probabilidad de compra:</dt>
+                <dd>{{ ev.purchaseProbability }}%</dd>
+                <dt class="text-gray-600">Tiempo estimado de compra:</dt>
+                <dd>{{ ev.estimatedPurchaseDate }}</dd>
+                <dt class="text-gray-600">Observaciones:</dt>
+                <dd class="col-span-2 break-words whitespace-pre-wrap">{{ ev.observations || '—' }}</dd>
+              </dl>
+            }
+          </div>
+
+          <div>
+            <h3 class="font-semibold text-gray-800 mb-2">Estado de devolución</h3>
+            @if (returnState(); as rs) {
+              <dl class="grid grid-cols-2 gap-2 text-sm">
+                <dt class="text-gray-600">Kilometraje final:</dt>
+                <dd>{{ rs.finalMileage }} km</dd>
+                <dt class="text-gray-600">Nivel de combustible:</dt>
+                <dd>{{ rs.fuelLevelPercentage }}%</dd>
+              </dl>
+            }
+          </div>
+        </div>
+
+        <div class="flex justify-end mt-6">
+          <button
+            type="button"
+            class="td-btn td-btn--emphasized w-full sm:w-auto"
+            (click)="onSubmit()"
+            [disabled]="isLoading()"
+            [attr.aria-busy]="isLoading()">
+            @if (isLoading()) {
+              Enviando...
+            } @else {
+              Enviar formulario de prueba de manejo
+            }
+          </button>
+        </div>
+      }
+    </app-content-card>
+  </div>
+</app-wizard-layout>

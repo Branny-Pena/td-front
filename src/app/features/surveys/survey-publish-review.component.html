@@ -1,0 +1,95 @@
+<app-wizard-layout
+  [currentStep]="1"
+  [totalSteps]="1"
+  [showStepper]="false"
+  [showBottomNav]="false">
+  <div class="max-w-3xl mx-auto">
+    <div class="mb-4 flex items-center justify-between gap-2">
+      <a [routerLink]="getBackRoute()" class="td-btn td-btn--standard">
+        Volver
+      </a>
+    </div>
+
+    <app-content-card title="Revisión de encuesta">
+      @if (isLoading()) {
+        <div class="h-24 rounded-lg border border-gray-200 bg-gray-50 animate-pulse"></div>
+      } @else {
+        @if (version(); as v) {
+          <div class="space-y-4">
+            <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-800">
+              Revisa la encuesta antes de publicarla. Al publicar, la encuesta quedará en estado
+              <span class="font-semibold">Lista</span> y no se podrá editar.
+            </div>
+
+            <div class="rounded-lg border border-gray-200 bg-white p-4">
+              <div class="text-sm font-semibold text-gray-900">{{ v.survey?.name ?? 'Encuesta' }}</div>
+              <div class="text-sm text-gray-600 mt-1">
+                Marca: <span class="text-gray-800 font-medium">{{ v.survey?.brand }}</span>
+              </div>
+              <div class="mt-2 flex flex-wrap items-center gap-2">
+                <span
+                  class="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold"
+                  [class.bg-amber-100]="v.survey?.status !== 'ready'"
+                  [class.text-amber-800]="v.survey?.status !== 'ready'"
+                  [class.bg-emerald-100]="v.survey?.status === 'ready'"
+                  [class.text-emerald-800]="v.survey?.status === 'ready'">
+                  {{ v.survey?.status === 'ready' ? 'Lista' : 'Borrador' }}
+                </span>
+                <span class="text-sm text-gray-600">Versión: <span class="text-gray-900 font-medium">{{ v.version }}</span></span>
+              </div>
+            </div>
+
+            <div class="rounded-lg border border-gray-200 bg-white p-4">
+              <div class="text-sm font-semibold text-gray-900 mb-3">Preguntas</div>
+              @if ((v.questions?.length ?? 0) === 0) {
+                <div class="text-sm text-gray-700">No hay preguntas para publicar.</div>
+              } @else {
+                <div class="space-y-3">
+                  @for (q of (v.questions ?? []); track q.id) {
+                    <div class="rounded-lg border border-gray-200 bg-white p-4">
+                      <div class="text-sm font-semibold text-gray-900">
+                        {{ q.orderIndex }}. {{ q.label }}
+                        @if (q.isRequired) {
+                          <span class="ml-2 text-xs font-semibold text-amber-700 bg-amber-100 rounded-full px-2 py-0.5">
+                            Requerida
+                          </span>
+                        }
+                      </div>
+                      <div class="mt-1 text-sm text-gray-600">
+                        Tipo: {{ q.type }}
+                        @if (q.type === 'number') {
+                          <span class="text-gray-500">•</span>
+                          Escala {{ q.minValue }}–{{ q.maxValue }}
+                        }
+                      </div>
+                      @if (q.options?.length) {
+                        <div class="mt-2 flex flex-wrap gap-2">
+                          @for (opt of q.options; track opt.id) {
+                            <span class="inline-flex items-center rounded-full bg-gray-100 text-gray-800 px-2 py-1 text-xs">
+                              {{ opt.label }}
+                            </span>
+                          }
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+
+            <div class="flex flex-col sm:flex-row justify-end gap-2">
+              <a routerLink="/encuestas" class="td-btn td-btn--standard">Cancelar</a>
+              <button
+                type="button"
+                class="td-btn td-btn--emphasized"
+                [disabled]="!canPublish() || isPublishing()"
+                (click)="publish()">
+                {{ isPublishing() ? 'Publicando...' : 'Confirmar publicación' }}
+              </button>
+            </div>
+          </div>
+        }
+      }
+    </app-content-card>
+  </div>
+</app-wizard-layout>

@@ -1,0 +1,123 @@
+<app-wizard-layout
+  [currentStep]="1"
+  [totalSteps]="1"
+  [showStepper]="false"
+  [showBack]="false"
+  [showNext]="false">
+  <div class="max-w-3xl mx-auto">
+    <app-content-card title="Borradores">
+      <p class="text-sm text-gray-600 mb-4">
+        Selecciona un formulario para continuar o revisar el detalle.
+      </p>
+
+      <div class="flex flex-wrap gap-2 mb-4">
+        <button
+          type="button"
+          class="px-3 py-1.5 text-sm rounded-full border transition-colors"
+          [class.td-bg-primary]="selectedStatus() === 'all'"
+          [class.text-white]="selectedStatus() === 'all'"
+          [class.border-transparent]="selectedStatus() === 'all'"
+          [class.bg-white]="selectedStatus() !== 'all'"
+          [class.text-gray-700]="selectedStatus() !== 'all'"
+          [class.border-gray-200]="selectedStatus() !== 'all'"
+          (click)="setStatusFilter('all')">
+          Todos
+        </button>
+        <button
+          type="button"
+          class="px-3 py-1.5 text-sm rounded-full border transition-colors"
+          [class.td-bg-primary]="selectedStatus() === 'draft'"
+          [class.text-white]="selectedStatus() === 'draft'"
+          [class.border-transparent]="selectedStatus() === 'draft'"
+          [class.bg-white]="selectedStatus() !== 'draft'"
+          [class.text-gray-700]="selectedStatus() !== 'draft'"
+          [class.border-gray-200]="selectedStatus() !== 'draft'"
+          (click)="setStatusFilter('draft')">
+          Borradores
+        </button>
+        <button
+          type="button"
+          class="px-3 py-1.5 text-sm rounded-full border transition-colors"
+          [class.td-bg-primary]="selectedStatus() === 'pending'"
+          [class.text-white]="selectedStatus() === 'pending'"
+          [class.border-transparent]="selectedStatus() === 'pending'"
+          [class.bg-white]="selectedStatus() !== 'pending'"
+          [class.text-gray-700]="selectedStatus() !== 'pending'"
+          [class.border-gray-200]="selectedStatus() !== 'pending'"
+          (click)="setStatusFilter('pending')">
+          Pendientes
+        </button>
+        <button
+          type="button"
+          class="px-3 py-1.5 text-sm rounded-full border transition-colors"
+          [class.td-bg-primary]="selectedStatus() === 'submitted'"
+          [class.text-white]="selectedStatus() === 'submitted'"
+          [class.border-transparent]="selectedStatus() === 'submitted'"
+          [class.bg-white]="selectedStatus() !== 'submitted'"
+          [class.text-gray-700]="selectedStatus() !== 'submitted'"
+          [class.border-gray-200]="selectedStatus() !== 'submitted'"
+          (click)="setStatusFilter('submitted')">
+          Enviados
+        </button>
+      </div>
+
+      @if (isLoading()) {
+        <div class="space-y-3">
+          <div class="h-20 rounded-lg border border-gray-200 bg-gray-50 animate-pulse"></div>
+          <div class="h-20 rounded-lg border border-gray-200 bg-gray-50 animate-pulse"></div>
+          <div class="h-20 rounded-lg border border-gray-200 bg-gray-50 animate-pulse"></div>
+        </div>
+      } @else {
+        @if (filteredForms().length === 0) {
+          <div class="rounded-lg border border-gray-200 bg-white p-4 text-gray-700">
+            No hay formularios disponibles para este filtro.
+          </div>
+        } @else {
+          <div class="space-y-3">
+            @for (form of filteredForms(); track form.id) {
+              <button
+                type="button"
+                class="w-full text-left rounded-lg border border-gray-200 bg-white p-4 shadow-sm hover:bg-gray-50 focus:outline-none focus-visible:td-ring-primary transition"
+                (click)="openDraft(form)">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="min-w-0">
+                    <div class="text-sm font-semibold text-gray-900 truncate">
+                      {{ form.customer.firstName }} {{ form.customer.lastName }}
+                      <span class="text-gray-500 font-normal">· DNI {{ form.customer.dni }}</span>
+                    </div>
+                    <div class="mt-1 text-sm text-gray-700 flex flex-wrap gap-x-3 gap-y-1">
+                      <span class="inline-flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full td-bg-primary"></span>
+                        {{ form.vehicle.make }} {{ form.vehicle.model }}
+                      </span>
+                      <span class="text-gray-500">Placa: <span class="text-gray-800">{{ form.vehicle.licensePlate }}</span></span>
+                      <span class="text-gray-500">Ubicación: <span class="text-gray-800">{{ form.location.locationName }}</span></span>
+                    </div>
+                    <div class="mt-2 text-xs text-gray-500">
+                      Actualizado: {{ formatDate(form.updatedAt || form.createdAt) }}
+                    </div>
+                  </div>
+                  <div class="shrink-0 flex flex-col items-end gap-2">
+                    <span
+                      class="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold"
+                      [class.bg-gray-200]="form.status === 'draft'"
+                      [class.text-gray-900]="form.status === 'draft'"
+                      [class.bg-amber-100]="form.status === 'pending'"
+                      [class.text-amber-900]="form.status === 'pending'"
+                      [class.bg-emerald-100]="form.status === 'submitted'"
+                      [class.text-emerald-800]="form.status === 'submitted'">
+                      {{ form.status === 'draft' ? 'Borrador' : form.status === 'pending' ? 'Pendiente' : 'Enviado' }}
+                    </span>
+                    <span class="td-text-primary text-sm font-medium">
+                      {{ form.status === 'submitted' ? 'Ver' : 'Continuar' }}
+                    </span>
+                  </div>
+                </div>
+              </button>
+            }
+          </div>
+        }
+      }
+    </app-content-card>
+  </div>
+</app-wizard-layout>

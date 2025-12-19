@@ -1,0 +1,28 @@
+<nav class="fixed bottom-0 left-0 right-0 z-40 td-app-bar border-t p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] flex justify-between items-center shadow-sm" aria-label="Wizard navigation">
+  <div>
+    @if (showBack()) {
+      <button
+        class="td-btn td-btn--standard"
+        (click)="onBack()"
+        [attr.aria-label]="backLabel()">
+        {{ backLabel() }}
+      </button>
+    }
+  </div>
+  <div>
+    @if (showNext()) {
+      <button
+        class="td-btn td-btn--emphasized"
+        (click)="onNext()"
+        [disabled]="nextDisabled() || isLoading()"
+        [attr.aria-label]="nextLabel()"
+        [attr.aria-busy]="isLoading()">
+        @if (isLoading()) {
+          Cargando...
+        } @else {
+          {{ nextLabel() }}
+        }
+      </button>
+    }
+  </div>
+</nav>

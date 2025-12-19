@@ -1,0 +1,7 @@
+.td-modal-ok:hover:not(:disabled) {
+  background-color: var(--td-primary-hover);
+}
+
+.td-modal-ok:active:not(:disabled) {
+  background-color: var(--td-primary-active);
+}

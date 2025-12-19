@@ -1,0 +1,38 @@
+<app-wizard-layout
+  [currentStep]="1"
+  [totalSteps]="6"
+  [backLabel]="'Volver'"
+  [nextLabel]="'Siguiente'"
+  [showBack]="true"
+  [showNext]="true"
+  [nextDisabled]="isLoading()"
+  (backClick)="onBack()"
+  (nextClick)="onNext()">
+  <div class="max-w-3xl mx-auto">
+    <app-content-card title="Cliente (solo lectura)">
+      @if (isLoading()) {
+        <div class="h-28 rounded-lg border border-gray-200 bg-gray-50 animate-pulse"></div>
+      } @else {
+        @if (customer(); as u) {
+          <dl class="grid grid-cols-[auto,minmax(0,1fr)] gap-x-10 gap-y-1 text-sm">
+            <dt class="text-gray-600">Nombre:</dt>
+            <dd class="font-medium min-w-0 break-words">{{ u.firstName }} {{ u.lastName }}</dd>
+            <dt class="text-gray-600">DNI:</dt>
+            <dd class="font-medium min-w-0 break-words">{{ u.dni }}</dd>
+            @if (u.phoneNumber) {
+              <dt class="text-gray-600">Teléfono:</dt>
+              <dd class="font-medium min-w-0 break-words">{{ u.phoneNumber }}</dd>
+            }
+            @if (u.email) {
+              <dt class="text-gray-600">Correo:</dt>
+              <dd class="font-medium min-w-0 break-words">{{ u.email }}</dd>
+            }
+          </dl>
+        } @else {
+          <div class="text-sm text-gray-700">Sin información del cliente.</div>
+        }
+      }
+    </app-content-card>
+  </div>
+</app-wizard-layout>
+

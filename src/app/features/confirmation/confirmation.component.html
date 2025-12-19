@@ -1,0 +1,176 @@
+<app-wizard-layout [currentStep]="6" [showNext]="false" [showBack]="!isSubmitted()" (backClick)="onBack()">
+
+  @if (!isSubmitted()) {
+  <div class="flex flex-col gap-4">
+    <app-content-card title="Confirmación Final">
+      <p class="text-sm text-gray-600 mb-4">Por favor revise toda la información antes de enviar.</p>
+
+      @if (errorMessage()) {
+      <div class="p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm mb-4" role="alert">
+        {{ errorMessage() }}
+      </div>
+      }
+
+      <div class="space-y-4">
+        <div>
+          <h3 class="font-semibold text-gray-800 mb-2">Cliente</h3>
+          @if (customer(); as u) {
+          <dl class="grid grid-cols-2 gap-2 text-sm">
+            <dt class="text-gray-600">Nombre:</dt>
+            <dd>{{ u.firstName }} {{ u.lastName }}</dd>
+            <dt class="text-gray-600">DNI:</dt>
+            <dd>{{ u.dni }}</dd>
+          </dl>
+          }
+        </div>
+
+        <div>
+          <h3 class="font-semibold text-gray-800 mb-2">Vehículo</h3>
+          @if (vehicle(); as v) {
+          <dl class="grid grid-cols-2 gap-2 text-sm">
+            <dt class="text-gray-600">Vehículo:</dt>
+            <dd>{{ v.make }} {{ v.model }}</dd>
+            <dt class="text-gray-600">Placa:</dt>
+            <dd>{{ v.licensePlate }}</dd>
+          </dl>
+          }
+          @if (location(); as loc) {
+          <dl class="grid grid-cols-2 gap-2 text-sm mt-1">
+            <dt class="text-gray-600">Ubicación:</dt>
+            <dd>{{ loc.locationName }}</dd>
+          </dl>
+          }
+        </div>
+
+        <div>
+          <h3 class="font-semibold text-gray-800 mb-2">Firma</h3>
+          @if (signatureData(); as sig) {
+          <img [src]="sig" alt="Firma" class="border border-gray-300 rounded max-w-xs" />
+          }
+        </div>
+
+        <div>
+          <h3 class="font-semibold text-gray-800 mb-2">Evaluación</h3>
+          @if (evaluation(); as ev) {
+          <dl class="grid grid-cols-2 gap-2 text-sm">
+            <dt class="text-gray-600">Probabilidad de Compra:</dt>
+            <dd>{{ ev.purchaseProbability }}%</dd>
+            <dt class="text-gray-600">Tiempo Estimado de Compra:</dt>
+            <dd>{{ ev.estimatedPurchaseDate }}</dd>
+            <dt class="text-gray-600">Observaciones:</dt>
+            <dd class="col-span-2">{{ ev.observations || '-' }}</dd>
+          </dl>
+          }
+        </div>
+
+        <div>
+          <h3 class="font-semibold text-gray-800 mb-2">Estado de Devolución</h3>
+          @if (returnState(); as rs) {
+          <dl class="grid grid-cols-2 gap-2 text-sm">
+            <dt class="text-gray-600">Kilometraje Final:</dt>
+            <dd>{{ rs.finalMileage }} km</dd>
+            <dt class="text-gray-600">Nivel de Combustible:</dt>
+            <dd>{{ rs.fuelLevelPercentage }}%</dd>
+          </dl>
+          @if (rs.imageUrls.length > 0) {
+          <div class="mt-2">
+            <dt class="text-gray-600 text-sm mb-1">Fotos ({{ rs.imageUrls.length }}):</dt>
+            <div class="grid grid-cols-3 gap-2">
+              @for (url of rs.imageUrls; track url) {
+              <img [src]="url" alt="Foto del vehÇðculo" class="w-full h-20 object-cover rounded" />
+              }
+            </div>
+          </div>
+          }
+          }
+        </div>
+      </div>
+
+      <div class="flex justify-end mt-6">
+        <button class="td-btn td-btn--emphasized w-full sm:w-auto" (click)="onSubmit()"
+          [disabled]="!canSubmit() || isLoading()" [attr.aria-busy]="isLoading()">
+          @if (isLoading()) {
+          Enviando...
+          } @else {
+          Enviar Formulario de Prueba de Manejo
+          }
+        </button>
+      </div>
+    </app-content-card>
+  </div>
+  } @else {
+  <app-content-card title="¡Éxito!">
+    <div class="td-success text-center py-8">
+      <div class="text-green-600 text-5xl mb-4">ƒo"</div>
+      @if (testDriveForm(); as iconForm) {
+        <div class="mx-auto mb-4 w-16 h-16">
+          <svg
+            viewBox="0 0 64 64"
+            class="td-status-icon w-16 h-16"
+            [class.td-status-icon--pending]="iconForm.status === 'pending'"
+            aria-hidden="true">
+            <circle class="td-status-icon__fill" cx="32" cy="32" r="30" />
+            <circle class="td-status-icon__ring" cx="32" cy="32" r="30" />
+            @if (iconForm.status === 'pending') {
+              <path class="td-status-icon__glyph" d="M32 18 L32 32 L41 37" />
+            } @else {
+              <path class="td-status-icon__glyph" d="M20 33 L28 41 L45 24" />
+            }
+          </svg>
+        </div>
+      }
+
+      <h2 class="text-xl font-semibold text-gray-800 mb-2">
+        {{ testDriveForm()?.status === 'pending' ? 'Formulario guardado como pendiente' : 'Formulario de Prueba de Manejo Enviado' }}
+      </h2>
+      <p class="text-gray-600 mb-6">
+        {{ testDriveForm()?.status === 'pending'
+          ? 'El formulario se envió como pendiente. Falta confirmar la información del vehículo.'
+          : 'Su formulario de prueba de manejo ha sido enviado exitosamente.' }}
+      </p>
+
+      @if (testDriveForm(); as form) {
+      <div class="bg-gray-50 rounded p-4 mb-6 text-left">
+        <dl class="grid grid-cols-2 gap-2 text-sm">
+          <dt class="text-gray-600">ID del Formulario:</dt>
+          <dd class="font-mono">{{ form.id }}</dd>
+          <dt class="text-gray-600">Estado:</dt>
+          <dd
+            class="uppercase font-semibold"
+            [class.text-emerald-700]="form.status === 'submitted'"
+            [class.text-amber-700]="form.status === 'pending'"
+            [class.text-gray-700]="form.status === 'draft'">
+            {{ form.status === 'submitted' ? 'Enviado' : form.status === 'pending' ? 'Pendiente' : 'Borrador' }}
+          </dd>
+          <dt class="text-gray-600">Vehículo:</dt>
+          <dd
+            class="uppercase font-semibold"
+            [class.text-amber-700]="form.status === 'pending'"
+            [class.text-emerald-700]="form.status === 'submitted'">
+            {{ form.status === 'pending' ? 'Pendiente de confirmación' : 'Confirmado' }}
+          </dd>
+          <dt class="text-gray-600">Creado:</dt>
+          <dd>{{ form.createdAt }}</dd>
+        </dl>
+      </div>
+      }
+
+      <div class="flex flex-col sm:flex-row sm:flex-wrap gap-3 justify-center">
+        <button class="td-btn td-btn--standard w-full sm:w-auto" (click)="generatePdf()"
+          aria-label="Generar reporte PDF">
+          Generar PDF
+        </button>
+        <button class="td-btn td-btn--standard w-full sm:w-auto" (click)="sendEmail()" [disabled]="isEmailLoading()"
+          aria-label="Enviar formulario por correo">
+          @if (isEmailLoading()) { Enviando... } @else { Enviar por Correo }
+        </button>
+        <button class="td-btn td-btn--emphasized w-full sm:w-auto" (click)="startNew()"
+          aria-label="Iniciar nuevo formulario de prueba de manejo">
+          Iniciar Nueva Prueba de Manejo
+        </button>
+      </div>
+    </div>
+  </app-content-card>
+  }
+
+</app-wizard-layout>

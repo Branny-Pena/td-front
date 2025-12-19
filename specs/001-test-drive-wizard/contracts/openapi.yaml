@@ -1,0 +1,472 @@
+openapi: 3.0.3
+info:
+  title: Test Drive API
+  description: REST API for managing vehicle test drive flows
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+    description: Development server
+
+paths:
+  /users:
+    post:
+      summary: Create a new customer
+      tags: [Users]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserDto'
+      responses:
+        '201':
+          description: Customer created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        '400':
+          description: Validation failed
+    get:
+      summary: List all users
+      tags: [Users]
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Customer'
+
+  /users/{id}:
+    get:
+      summary: Get customer by ID
+      tags: [Users]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Customer found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        '404':
+          description: Customer not found
+
+  /vehicles:
+    post:
+      summary: Create a new vehicle
+      tags: [Vehicles]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateVehicleDto'
+      responses:
+        '201':
+          description: Vehicle created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vehicle'
+        '400':
+          description: Validation failed
+    get:
+      summary: List all vehicles
+      tags: [Vehicles]
+      responses:
+        '200':
+          description: List of vehicles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Vehicle'
+
+  /locations:
+    post:
+      summary: Create a new location
+      tags: [Locations]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateLocationDto'
+      responses:
+        '201':
+          description: Location created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentLocation'
+        '400':
+          description: Validation failed
+    get:
+      summary: List all locations
+      tags: [Locations]
+      responses:
+        '200':
+          description: List of locations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CurrentLocation'
+
+  /test-drive-forms:
+    post:
+      summary: Create a new test drive form
+      tags: [TestDriveForms]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTestDriveFormDto'
+      responses:
+        '201':
+          description: Form created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestDriveForm'
+        '400':
+          description: Validation failed
+        '404':
+          description: Referenced entity not found
+    get:
+      summary: List all test drive forms
+      tags: [TestDriveForms]
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [draft, submitted]
+      responses:
+        '200':
+          description: List of forms
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TestDriveForm'
+
+  /test-drive-forms/{id}:
+    get:
+      summary: Get test drive form by ID
+      tags: [TestDriveForms]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Form found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestDriveForm'
+        '404':
+          description: Form not found
+    patch:
+      summary: Update test drive form
+      tags: [TestDriveForms]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTestDriveFormDto'
+      responses:
+        '200':
+          description: Form updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestDriveForm'
+        '400':
+          description: Validation failed
+        '404':
+          description: Form not found
+    delete:
+      summary: Delete test drive form
+      tags: [TestDriveForms]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Form deleted
+        '404':
+          description: Form not found
+
+components:
+  schemas:
+    Customer:
+      type: object
+      required: [id, firstName, lastName, dni]
+      properties:
+        id:
+          type: string
+          format: uuid
+        firstName:
+          type: string
+        lastName:
+          type: string
+        dni:
+          type: string
+        phoneNumber:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+
+    CreateUserDto:
+      type: object
+      required: [firstName, lastName, dni]
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        dni:
+          type: string
+        phoneNumber:
+          type: string
+        email:
+          type: string
+
+    Vehicle:
+      type: object
+      required: [id, make, model, licensePlate]
+      properties:
+        id:
+          type: string
+          format: uuid
+        make:
+          type: string
+        model:
+          type: string
+        licensePlate:
+          type: string
+        vinNumber:
+          type: string
+          nullable: true
+
+    CreateVehicleDto:
+      type: object
+      required: [make, model, licensePlate]
+      properties:
+        make:
+          type: string
+        model:
+          type: string
+        licensePlate:
+          type: string
+        vinNumber:
+          type: string
+
+    CurrentLocation:
+      type: object
+      required: [id, locationName]
+      properties:
+        id:
+          type: string
+          format: uuid
+        locationName:
+          type: string
+
+    CreateLocationDto:
+      type: object
+      required: [locationName]
+      properties:
+        locationName:
+          type: string
+
+    Image:
+      type: object
+      required: [id, url]
+      properties:
+        id:
+          type: string
+          format: uuid
+        url:
+          type: string
+
+    ReturnState:
+      type: object
+      required: [id, finalMileage, fuelLevelPercentage, images]
+      properties:
+        id:
+          type: string
+          format: uuid
+        finalMileage:
+          type: number
+        fuelLevelPercentage:
+          type: number
+          minimum: 0
+          maximum: 100
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/Image'
+
+    CreateReturnStateDto:
+      type: object
+      required: [finalMileage, fuelLevelPercentage]
+      properties:
+        finalMileage:
+          type: number
+        fuelLevelPercentage:
+          type: number
+          minimum: 0
+          maximum: 100
+        images:
+          type: array
+          items:
+            type: string
+
+    DigitalSignature:
+      type: object
+      required: [id, signatureData]
+      properties:
+        id:
+          type: string
+          format: uuid
+        signatureData:
+          type: string
+
+    TestDriveForm:
+      type: object
+      required: [id, purchaseProbability, estimatedPurchaseDate, observations, requiresSatisfactionSurvey, status, createdAt, updatedAt, customer, vehicle, location]
+      properties:
+        id:
+          type: string
+          format: uuid
+        purchaseProbability:
+          type: integer
+          minimum: 0
+          maximum: 100
+        estimatedPurchaseDate:
+          type: string
+          format: date
+        observations:
+          type: string
+          minLength: 10
+        requiresSatisfactionSurvey:
+          type: boolean
+        status:
+          type: string
+          enum: [draft, submitted]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        customer:
+          $ref: '#/components/schemas/Customer'
+        vehicle:
+          $ref: '#/components/schemas/Vehicle'
+        location:
+          $ref: '#/components/schemas/CurrentLocation'
+        digitalSignature:
+          $ref: '#/components/schemas/DigitalSignature'
+          nullable: true
+        returnState:
+          $ref: '#/components/schemas/ReturnState'
+          nullable: true
+
+    CreateTestDriveFormDto:
+      type: object
+      required: [customerId, vehicleId, locationId, purchaseProbability, estimatedPurchaseDate, observations, requiresSatisfactionSurvey, status]
+      properties:
+        customerId:
+          type: string
+          format: uuid
+        vehicleId:
+          type: string
+          format: uuid
+        locationId:
+          type: string
+          format: uuid
+        signatureData:
+          type: string
+        purchaseProbability:
+          type: integer
+          minimum: 0
+          maximum: 100
+        estimatedPurchaseDate:
+          type: string
+          format: date
+        observations:
+          type: string
+          minLength: 10
+        requiresSatisfactionSurvey:
+          type: boolean
+        status:
+          type: string
+          enum: [draft, submitted]
+        returnState:
+          $ref: '#/components/schemas/CreateReturnStateDto'
+
+    UpdateTestDriveFormDto:
+      type: object
+      properties:
+        customerId:
+          type: string
+          format: uuid
+        vehicleId:
+          type: string
+          format: uuid
+        locationId:
+          type: string
+          format: uuid
+        signatureData:
+          type: string
+        purchaseProbability:
+          type: integer
+          minimum: 0
+          maximum: 100
+        estimatedPurchaseDate:
+          type: string
+          format: date
+        observations:
+          type: string
+          minLength: 10
+        requiresSatisfactionSurvey:
+          type: boolean
+        status:
+          type: string
+          enum: [draft, submitted]
+        returnState:
+          $ref: '#/components/schemas/CreateReturnStateDto'

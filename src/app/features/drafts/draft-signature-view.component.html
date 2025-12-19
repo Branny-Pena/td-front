@@ -1,0 +1,29 @@
+<app-wizard-layout
+  [currentStep]="3"
+  [totalSteps]="6"
+  [backLabel]="'Atrás'"
+  [nextLabel]="'Siguiente'"
+  [showBack]="true"
+  [showNext]="true"
+  [nextDisabled]="isLoading()"
+  (backClick)="onBack()"
+  (nextClick)="onNext()">
+  <div class="max-w-3xl mx-auto">
+    <app-content-card title="Firma (solo lectura)">
+      @if (isLoading()) {
+        <div class="h-28 rounded-lg border border-gray-200 bg-gray-50 animate-pulse"></div>
+      } @else {
+        <p class="text-sm text-gray-600 mb-4">
+          Al firmar, el cliente reconoce que recibió el vehículo para una prueba de manejo y acepta los términos y condiciones.
+        </p>
+        @if (trustedSignature(); as sig) {
+          <div class="flex justify-center">
+            <img [src]="sig" alt="Firma del cliente" class="border border-gray-300 rounded-lg max-w-xs bg-gray-50 p-2" />
+          </div>
+        } @else {
+          <div class="text-sm text-gray-700">Sin firma registrada.</div>
+        }
+      }
+    </app-content-card>
+  </div>
+</app-wizard-layout>
