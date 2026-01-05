@@ -34,7 +34,6 @@ export class DraftConfirmationComponent {
 
   readonly customer = this.stateService.customer;
   readonly vehicle = this.stateService.vehicle;
-  readonly location = this.stateService.location;
   readonly signatureData = this.stateService.signatureData;
   readonly evaluation = this.stateService.evaluation;
   readonly returnState = this.stateService.returnState;
@@ -56,7 +55,7 @@ export class DraftConfirmationComponent {
 
     if (!this.customer()) missing.push('Cliente');
     if (!this.vehicle()) missing.push('Vehículo');
-    if (!this.location()) missing.push('Ubicación');
+    if (!this.vehicle()?.location) missing.push('Ubicación');
     if ((this.signatureRaw()?.trim().length ?? 0) === 0) missing.push('Firma');
 
     const evaluation = this.evaluation();
@@ -82,7 +81,7 @@ export class DraftConfirmationComponent {
   readonly canSubmit = computed(() => {
     return this.customer() !== null &&
       this.vehicle() !== null &&
-      this.location() !== null &&
+      !!this.vehicle()?.location &&
       (this.signatureRaw()?.trim().length ?? 0) > 0 &&
       this.evaluation() !== null &&
       this.returnState() !== null;
@@ -126,14 +125,13 @@ export class DraftConfirmationComponent {
 
     const customer = this.customer();
     const vehicle = this.vehicle();
-    const location = this.location();
     const signatureData = this.signatureRaw()?.trim() ?? '';
     const evaluation = this.evaluation();
     const returnState = this.returnState();
     const draftId = this.draftId();
 
     if (!draftId) return;
-    if (this.missingItems().length > 0 || !customer || !vehicle || !location || signatureData.length === 0 || !evaluation || !returnState) {
+    if (this.missingItems().length > 0 || !customer || !vehicle || !vehicle.location || signatureData.length === 0 || !evaluation || !returnState) {
       this.errorMessage.set(`Faltan datos por completar: ${this.missingItems().join(', ')}.`);
       return;
     }
@@ -153,7 +151,6 @@ export class DraftConfirmationComponent {
     const dto: UpdateTestDriveFormDto = {
       customerId: customer.id,
       vehicleId: vehicle.id,
-      locationId: location.id,
       signatureData: signatureData,
       purchaseProbability: evaluation.purchaseProbability,
       estimatedPurchaseDate: evaluation.estimatedPurchaseDate,
@@ -178,3 +175,6 @@ export class DraftConfirmationComponent {
     });
   }
 }
+
+
+

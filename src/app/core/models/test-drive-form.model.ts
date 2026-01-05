@@ -1,6 +1,5 @@
 import { Customer } from './customer.model';
 import { Vehicle } from './vehicle.model';
-import { CurrentLocation } from './location.model';
 import { DigitalSignature } from './digital-signature.model';
 import { ReturnState, CreateReturnStateDto } from './return-state.model';
 
@@ -28,7 +27,6 @@ export interface TestDriveForm {
   salesExpert?: string;
   customer: Customer | null;
   vehicle: Vehicle | null;
-  location: CurrentLocation | null;
   signature: DigitalSignature | null;
   returnState: ReturnState | null;
 }
@@ -37,7 +35,6 @@ export interface CreateTestDriveFormDto {
   brand?: TestDriveBrand;
   customerId?: string;
   vehicleId?: string;
-  locationId?: string;
   currentStep?: TestDriveFormStep;
   signatureData?: string;
   purchaseProbability?: number;
@@ -53,14 +50,12 @@ export interface CreateDraftTestDriveFormDto {
   status: 'draft';
   customerId?: string;
   vehicleId?: string;
-  locationId?: string;
 }
 
 export interface UpdateTestDriveFormDto {
   brand?: TestDriveBrand;
   customerId?: string;
   vehicleId?: string;
-  locationId?: string;
   currentStep?: TestDriveFormStep;
   signatureData?: string;
   purchaseProbability?: number;

@@ -47,6 +47,11 @@ export const routes: Routes = [
       .then(m => m.DraftsListComponent)
   },
   {
+    path: 'vehicle-qr',
+    loadComponent: () => import('./features/vehicle-qr/vehicle-qr.component')
+      .then(m => m.VehicleQrComponent)
+  },
+  {
     path: 'test-drive-forms/:id',
     redirectTo: 'test-drive-forms/:id/cliente',
     pathMatch: 'full'

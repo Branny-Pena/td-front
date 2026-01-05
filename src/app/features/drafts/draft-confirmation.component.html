@@ -54,16 +54,15 @@
                 <dd>{{ v.make }} {{ v.model }}</dd>
                 <dt class="text-gray-600">Placa:</dt>
                 <dd>{{ v.licensePlate }}</dd>
+                <dt class="text-gray-600">Color:</dt>
+                <dd>{{ v.color }}</dd>
+                <dt class="text-gray-600">Ubicacion:</dt>
+                <dd>{{ v.location }}</dd>
                 <dt class="text-gray-600">Estado de registro:</dt>
                 <dd>{{ v.registerStatus }}</dd>
               </dl>
             }
-            @if (location(); as loc) {
-              <dl class="grid grid-cols-2 gap-2 text-sm mt-1">
-                <dt class="text-gray-600">Ubicación:</dt>
-                <dd>{{ loc.locationName }}</dd>
-              </dl>
-            }
+            
           </div>
 
           <div>
@@ -128,3 +127,5 @@
     </app-content-card>
   </div>
 </app-wizard-layout>
+
+

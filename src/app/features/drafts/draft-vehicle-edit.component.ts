@@ -37,9 +37,10 @@ export class DraftVehicleEditComponent {
   readonly form = this.fb.nonNullable.group({
     make: ['', Validators.required],
     model: ['', Validators.required],
+    color: ['', Validators.required],
     licensePlate: ['', Validators.required],
     vinNumber: [''],
-    locationName: [{ value: '', disabled: true }]
+    location: ['', Validators.required]
   });
 
   constructor() {
@@ -59,17 +60,15 @@ export class DraftVehicleEditComponent {
       next: () => {
         const form = this.stateService.testDriveForm();
         const vehicle = this.stateService.vehicle();
-        const location = this.stateService.location();
         if (vehicle) {
           this.form.patchValue({
             make: vehicle.make,
             model: vehicle.model,
+            color: vehicle.color,
             licensePlate: vehicle.licensePlate,
-            vinNumber: vehicle.vinNumber ?? ''
+            vinNumber: vehicle.vinNumber ?? '',
+            location: vehicle.location
           });
-        }
-        if (location) {
-          this.form.patchValue({ locationName: location.locationName });
         }
         if (!form || form.status !== 'draft') {
           this.toastService.show('Este formulario ya fue enviado y no se puede editar.', { title: 'Formulario' });
@@ -124,6 +123,8 @@ export class DraftVehicleEditComponent {
     const dto: UpdateVehicleDto = {
       make: formValue.make,
       model: formValue.model,
+      color: formValue.color,
+      location: formValue.location,
       licensePlate: formValue.licensePlate,
       vinNumber: formValue.vinNumber?.trim() ? formValue.vinNumber.trim() : undefined
     };

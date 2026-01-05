@@ -126,6 +126,10 @@ export class DraftsListComponent {
     });
   }
 
+  goToQrGenerator(): void {
+    this.router.navigate(['/vehicle-qr']);
+  }
+
   progressIndex(form: TestDriveForm): number {
     switch (form.currentStep) {
       case 'CUSTOMER_DATA':
@@ -170,7 +174,7 @@ export class DraftsListComponent {
 
     if (step >= 2) {
       if (!form.vehicle) missing.push('Datos del vehículo');
-      if (!form.location) missing.push('Ubicación');
+      if (!form.vehicle?.location) missing.push('Ubicación');
     }
 
     if (step >= 3) {

@@ -59,6 +59,17 @@
       <div class="mb-4">
         <input
           type="text"
+          id="color"
+          formControlName="color"
+          placeholder="Color *"
+          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 td-ring-primary disabled:bg-gray-100 disabled:text-gray-700 disabled:cursor-not-allowed"
+          aria-label="Color"
+          aria-required="true" />
+      </div>
+
+      <div class="mb-4">
+        <input
+          type="text"
           id="licensePlate"
           formControlName="licensePlate"
           placeholder="Placa *"
@@ -83,8 +94,8 @@
       <div class="mb-4">
         <input
           type="text"
-          id="locationName"
-          formControlName="locationName"
+          id="location"
+          formControlName="location"
           placeholder="Ubicación *"
           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 td-ring-primary"
           aria-label="Ubicación"
@@ -94,3 +105,4 @@
   </app-content-card>
 
 </app-wizard-layout>
+

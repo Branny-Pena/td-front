@@ -32,20 +32,19 @@
           <dd class="font-medium min-w-0 break-words">{{ v.make }}</dd>
           <dt class="text-gray-600">Modelo:</dt>
           <dd class="font-medium min-w-0 break-words">{{ v.model }}</dd>
+          <dt class="text-gray-600">Color:</dt>
+          <dd class="font-medium min-w-0 break-words">{{ v.color }}</dd>
           <dt class="text-gray-600">Placa:</dt>
           <dd class="font-medium min-w-0 break-words">{{ v.licensePlate }}</dd>
+          <dt class="text-gray-600">Ubicacion:</dt>
+          <dd class="font-medium min-w-0 break-words">{{ v.location }}</dd>
           @if (v.vinNumber) {
             <dt class="text-gray-600">VIN:</dt>
             <dd class="font-medium min-w-0 break-words">{{ v.vinNumber }}</dd>
           }
         </dl>
       }
-      @if (location(); as loc) {
-        <dl class="grid grid-cols-[auto,minmax(0,1fr)] gap-x-6 gap-y-1 text-sm mt-1">
-          <dt class="text-gray-600">Ubicación:</dt>
-          <dd class="font-medium min-w-0 break-words">{{ loc.locationName }}</dd>
-        </dl>
-      }
+      
     </app-content-card>
 
     <app-content-card title="Firma Digital">
@@ -83,3 +82,5 @@
   </div>
 
 </app-wizard-layout>
+
+

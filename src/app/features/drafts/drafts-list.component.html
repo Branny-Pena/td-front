@@ -6,23 +6,30 @@
   [showNext]="false">
   <div class="max-w-3xl mx-auto">
     <app-content-card title="Listado de Test Drives">
-      <button
-        cardActions
-        type="button"
-        class="td-btn td-btn--emphasized inline-flex items-center gap-2 whitespace-nowrap text-xs h-9 px-3"
-        (click)="createNew()"
-        [disabled]="isCreating()"
-        [attr.aria-busy]="isCreating()">
-        <svg viewBox="0 0 20 20" class="w-4 h-4" aria-hidden="true">
-          <path
-            d="M10 4v12M4 10h12"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round" />
-        </svg>
-        @if (isCreating()) { Creando... } @else { Nuevo test-drive }
-      </button>
+      <div cardActions class="flex items-center gap-2">
+        <button
+          type="button"
+          class="td-btn td-btn--standard inline-flex items-center gap-2 whitespace-nowrap text-xs h-9 px-3"
+          (click)="goToQrGenerator()">
+          Generar QR
+        </button>
+        <button
+          type="button"
+          class="td-btn td-btn--emphasized inline-flex items-center gap-2 whitespace-nowrap text-xs h-9 px-3"
+          (click)="createNew()"
+          [disabled]="isCreating()"
+          [attr.aria-busy]="isCreating()">
+          <svg viewBox="0 0 20 20" class="w-4 h-4" aria-hidden="true">
+            <path
+              d="M10 4v12M4 10h12"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round" />
+          </svg>
+          @if (isCreating()) { Creando... } @else { Nuevo test-drive }
+        </button>
+      </div>
       <p class="text-sm text-gray-600 mb-4">
         Selecciona un formulario para continuar o revisar el detalle.
       </p>
@@ -167,7 +174,7 @@
                       Teléfono:
                       <span class="text-gray-800">{{ form.customer?.phoneNumber || '—' }}</span>
                     </span>
-                    <span class="text-gray-500">Ubicación: <span class="text-gray-800">{{ form.location?.locationName || '—' }}</span></span>
+                    <span class="text-gray-500">Ubicación: <span class="text-gray-800">{{ form.vehicle?.location || '—' }}</span></span>
                   </div>
 
                   <div class="pt-2 mt-1 border-t border-gray-200 text-xs text-gray-500 w-full">

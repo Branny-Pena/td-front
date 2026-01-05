@@ -29,7 +29,6 @@ export class SignatureSummaryComponent {
 
   readonly customer = this.stateService.customer;
   readonly vehicle = this.stateService.vehicle;
-  readonly location = this.stateService.location;
   readonly signatureData = this.stateService.signatureData;
   readonly draftFormId = this.stateService.draftFormId;
   readonly testDriveForm = this.stateService.testDriveForm;
@@ -46,7 +45,7 @@ export class SignatureSummaryComponent {
       return;
     }
 
-    if (!this.stateService.vehicle() || !this.stateService.location()) {
+    if (!this.stateService.vehicle() || !this.stateService.vehicle()?.location) {
       this.toastService.show('Faltan datos del vehículo. Completa el paso 2.', { title: 'Vehículo' });
       this.router.navigate(['/vehicle']);
     }
@@ -65,11 +64,10 @@ export class SignatureSummaryComponent {
 
     const customer = this.customer();
     const vehicle = this.vehicle();
-    const location = this.location();
     const signatureData = this.signatureData();
     const draftId = this.draftFormId();
 
-    if (!customer || !vehicle || !location || !signatureData) {
+    if (!customer || !vehicle || !signatureData) {
       this.toastService.show('Faltan datos. Completa los pasos anteriores.', { title: 'Test Drive' });
       return;
     }
@@ -102,7 +100,6 @@ export class SignatureSummaryComponent {
       brand,
       customerId: customer.id,
       vehicleId: vehicle.id,
-      locationId: location.id,
       currentStep: 'VALUATION_DATA',
       status: 'draft'
     }).subscribe({
@@ -119,3 +116,7 @@ export class SignatureSummaryComponent {
     });
   }
 }
+
+
+
+

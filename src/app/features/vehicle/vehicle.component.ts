@@ -1,15 +1,14 @@
 import { Component, ChangeDetectionStrategy, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { forkJoin, Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged, filter, takeUntil } from 'rxjs';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 import { WizardLayoutComponent } from '../../shared/layouts/wizard-layout/wizard-layout.component';
 import { ContentCardComponent } from '../../shared/components/content-card/content-card.component';
 import { TestDriveStateService } from '../../core/services/test-drive-state.service';
 import { VehicleService } from '../../core/services/vehicle.service';
-import { LocationService } from '../../core/services/location.service';
 import { MessageToastService } from '../../shared/services/message-toast.service';
-import { CreateVehicleDto, CreateLocationDto } from '../../core/models';
+import { CreateVehicleDto } from '../../core/models';
 import { BarcodeScannerDialogComponent } from '../../shared/components/barcode-scanner-dialog/barcode-scanner-dialog.component';
 import { BarcodeFormat } from '@zxing/library';
 import { TestDriveFormService } from '../../core/services/test-drive-form.service';
@@ -28,7 +27,6 @@ export class VehicleComponent implements OnInit, OnDestroy {
   private readonly fb = inject(FormBuilder);
   private readonly stateService = inject(TestDriveStateService);
   private readonly vehicleService = inject(VehicleService);
-  private readonly locationService = inject(LocationService);
   private readonly testDriveFormService = inject(TestDriveFormService);
   private readonly toastService = inject(MessageToastService);
   private readonly themeService = inject(ThemeService);
@@ -53,29 +51,24 @@ export class VehicleComponent implements OnInit, OnDestroy {
   readonly form = this.fb.nonNullable.group({
     make: ['', Validators.required],
     model: ['', Validators.required],
+    color: ['', Validators.required],
     licensePlate: ['', Validators.required],
     vinNumber: [''],
-    locationName: ['', Validators.required]
+    location: ['', Validators.required]
   });
 
   constructor() {
     this.stateService.setCurrentStep(2);
 
     const existingVehicle = this.stateService.vehicle();
-    const existingLocation = this.stateService.location();
-
     if (existingVehicle) {
       this.form.patchValue({
         make: existingVehicle.make,
         model: existingVehicle.model,
+        color: existingVehicle.color,
         licensePlate: existingVehicle.licensePlate,
-        vinNumber: existingVehicle.vinNumber || ''
-      });
-    }
-
-    if (existingLocation) {
-      this.form.patchValue({
-        locationName: existingLocation.locationName
+        vinNumber: existingVehicle.vinNumber || '',
+        location: existingVehicle.location
       });
     }
 
@@ -148,8 +141,10 @@ export class VehicleComponent implements OnInit, OnDestroy {
             {
               make: vehicle.make,
               model: vehicle.model,
+              color: vehicle.color,
               licensePlate: vehicle.licensePlate,
-              vinNumber: vehicle.vinNumber || ''
+              vinNumber: vehicle.vinNumber || '',
+              location: vehicle.location
             },
             { emitEvent: false }
           );
@@ -179,7 +174,7 @@ export class VehicleComponent implements OnInit, OnDestroy {
   private clearAutofilledVehicleDetails(): void {
     this.stateService.clearVehicle();
     this.isVehicleAutofilled.set(false);
-    this.form.patchValue({ make: '', model: '' }, { emitEvent: false });
+    this.form.patchValue({ make: '', model: '', color: '', location: '' }, { emitEvent: false });
     this.setVehicleDetailsEditable(true);
   }
 
@@ -188,11 +183,15 @@ export class VehicleComponent implements OnInit, OnDestroy {
     if (isEditable) {
       controls.make.enable({ emitEvent: false });
       controls.model.enable({ emitEvent: false });
+      controls.color.enable({ emitEvent: false });
+      controls.location.enable({ emitEvent: false });
       return;
     }
 
     controls.make.disable({ emitEvent: false });
     controls.model.disable({ emitEvent: false });
+    controls.color.disable({ emitEvent: false });
+    controls.location.disable({ emitEvent: false });
   }
 
   private notifyOnce(
@@ -298,9 +297,10 @@ export class VehicleComponent implements OnInit, OnDestroy {
   private tryParseQrVehiclePayload(raw: string): {
     make?: string;
     model?: string;
+    color?: string;
     licensePlate?: string;
     vinNumber?: string;
-    locationName?: string;
+    location?: string;
   } | null {
     const trimmed = raw.trim();
     if (!trimmed.startsWith('{')) return null;
@@ -319,6 +319,12 @@ export class VehicleComponent implements OnInit, OnDestroy {
           : typeof obj['model'] === 'string'
             ? obj['model']
             : undefined;
+      const color =
+        typeof obj['color'] === 'string'
+          ? obj['color']
+          : typeof obj['Color'] === 'string'
+            ? obj['Color']
+            : undefined;
       const licensePlate =
         typeof obj['placa'] === 'string'
           ? obj['placa']
@@ -332,25 +338,31 @@ export class VehicleComponent implements OnInit, OnDestroy {
             ? obj['vinNumber']
             : undefined;
       const vinNumber = vinRaw ? this.normalizeVin(vinRaw) : undefined;
-      const locationName =
+      const location =
         typeof obj['ubicacion'] === 'string'
           ? obj['ubicacion']
           : typeof obj['ubicación'] === 'string'
             ? (obj['ubicación'] as string)
-            : typeof obj['locationName'] === 'string'
-              ? obj['locationName']
+            : typeof obj['location'] === 'string'
+              ? obj['location']
               : undefined;
 
       const payload = {
         make: make?.trim() || undefined,
         model: model?.trim() || undefined,
+        color: color?.trim() || undefined,
         licensePlate: licensePlate?.trim() || undefined,
         vinNumber: vinNumber?.trim() || undefined,
-        locationName: locationName?.trim() || undefined
+        location: location?.trim() || undefined
       };
 
       const hasAny =
-        !!payload.make || !!payload.model || !!payload.licensePlate || !!payload.vinNumber || !!payload.locationName;
+        !!payload.make ||
+        !!payload.model ||
+        !!payload.color ||
+        !!payload.licensePlate ||
+        !!payload.vinNumber ||
+        !!payload.location;
       return hasAny ? payload : null;
     } catch {
       return null;
@@ -360,17 +372,19 @@ export class VehicleComponent implements OnInit, OnDestroy {
   private applyQrAutofill(payload: {
     make?: string;
     model?: string;
+    color?: string;
     licensePlate?: string;
     vinNumber?: string;
-    locationName?: string;
+    location?: string;
   }): void {
     this.form.patchValue(
       {
         make: payload.make ?? this.form.controls.make.value,
         model: payload.model ?? this.form.controls.model.value,
+        color: payload.color ?? this.form.controls.color.value,
         licensePlate: payload.licensePlate ?? this.form.controls.licensePlate.value,
         vinNumber: payload.vinNumber ?? this.form.controls.vinNumber.value,
-        locationName: payload.locationName ?? this.form.controls.locationName.value
+        location: payload.location ?? this.form.controls.location.value
       },
       { emitEvent: false }
     );
@@ -386,6 +400,10 @@ export class VehicleComponent implements OnInit, OnDestroy {
       controls.model.disable({ emitEvent: false });
       lockedAny = true;
     }
+    if (payload.color && payload.color.trim().length > 0) {
+      controls.color.disable({ emitEvent: false });
+      lockedAny = true;
+    }
     if (payload.licensePlate && payload.licensePlate.trim().length > 0) {
       controls.licensePlate.disable({ emitEvent: false });
       lockedAny = true;
@@ -394,8 +412,8 @@ export class VehicleComponent implements OnInit, OnDestroy {
       controls.vinNumber.disable({ emitEvent: false });
       lockedAny = true;
     }
-    if (payload.locationName && payload.locationName.trim().length > 0) {
-      controls.locationName.disable({ emitEvent: false });
+    if (payload.location && payload.location.trim().length > 0) {
+      controls.location.disable({ emitEvent: false });
       lockedAny = true;
     }
 
@@ -413,21 +431,15 @@ export class VehicleComponent implements OnInit, OnDestroy {
     const vehicleDto: CreateVehicleDto = {
       make: formValue.make,
       model: formValue.model,
+      color: formValue.color,
+      location: formValue.location,
       licensePlate: formValue.licensePlate,
       vinNumber: formValue.vinNumber || undefined
     };
-
-    const locationDto: CreateLocationDto = {
-      locationName: formValue.locationName
-    };
-
-    forkJoin({
-      vehicle: this.vehicleService.create(vehicleDto),
-      location: this.locationService.create(locationDto)
-    }).subscribe({
-      next: ({ vehicle, location }) => {
+ 
+    this.vehicleService.create(vehicleDto).subscribe({
+      next: (vehicle) => {
         this.stateService.setVehicle(vehicle);
-        this.stateService.setLocation(location);
         const draftId = this.stateService.draftFormId();
         const brand = this.themeService.getSurveyBrand() ?? undefined;
 
@@ -440,7 +452,6 @@ export class VehicleComponent implements OnInit, OnDestroy {
           this.testDriveFormService.update(draftId, {
             brand,
             vehicleId: vehicle.id,
-            locationId: location.id,
             currentStep: 'SIGNATURE_DATA'
           }).subscribe({
             next: (form) => {
@@ -460,7 +471,6 @@ export class VehicleComponent implements OnInit, OnDestroy {
           brand,
           customerId: customerId ?? undefined,
           vehicleId: vehicle.id,
-          locationId: location.id,
           currentStep: 'SIGNATURE_DATA',
           status: 'draft'
         }).subscribe({
@@ -482,3 +492,4 @@ export class VehicleComponent implements OnInit, OnDestroy {
     });
   }
 }
+

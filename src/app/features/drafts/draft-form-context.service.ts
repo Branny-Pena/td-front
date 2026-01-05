@@ -19,7 +19,6 @@ export class DraftFormContextService {
         this.stateService.setTestDriveForm(form);
         if (form.customer) this.stateService.setUser(form.customer);
         if (form.vehicle) this.stateService.setVehicle(form.vehicle);
-        if (form.location) this.stateService.setLocation(form.location);
         this.stateService.setSignatureData(form.signature?.signatureData ?? null);
 
         this.stateService.setEvaluation({

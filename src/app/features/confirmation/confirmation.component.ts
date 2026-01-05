@@ -31,7 +31,6 @@ export class ConfirmationComponent {
 
   readonly customer = this.stateService.customer;
   readonly vehicle = this.stateService.vehicle;
-  readonly location = this.stateService.location;
   readonly signatureData = this.stateService.signatureData;
   readonly evaluation = this.stateService.evaluation;
   readonly returnState = this.stateService.returnState;
@@ -45,7 +44,7 @@ export class ConfirmationComponent {
     const returnState = this.returnState();
     return this.customer() !== null &&
       this.vehicle() !== null &&
-      this.location() !== null &&
+      !!this.vehicle()?.location &&
       this.signatureData() !== null &&
       this.evaluation() !== null &&
       returnState !== null &&
@@ -79,13 +78,12 @@ export class ConfirmationComponent {
 
     const customer = this.customer();
     const vehicle = this.vehicle();
-    const location = this.location();
     const signatureData = this.signatureData();
     const evaluation = this.evaluation();
     const returnState = this.returnState();
     const draftId = this.stateService.draftFormId();
 
-    if (!customer || !vehicle || !location || !signatureData || !evaluation || !returnState) {
+    if (!customer || !vehicle || !vehicle.location || !signatureData || !evaluation || !returnState) {
       this.errorMessage.set('Faltan datos por completar. Verifica todos los pasos.');
       return;
     }
@@ -107,7 +105,6 @@ export class ConfirmationComponent {
       const dto: UpdateTestDriveFormDto = {
         customerId: customer.id,
         vehicleId: vehicle.id,
-        locationId: location.id,
         signatureData: signatureData,
         purchaseProbability: evaluation.purchaseProbability,
         estimatedPurchaseDate: evaluation.estimatedPurchaseDate,
@@ -134,7 +131,6 @@ export class ConfirmationComponent {
     const dto: CreateTestDriveFormDto = {
       customerId: customer.id,
       vehicleId: vehicle.id,
-      locationId: location.id,
       signatureData: signatureData,
       purchaseProbability: evaluation.purchaseProbability,
       estimatedPurchaseDate: evaluation.estimatedPurchaseDate,
@@ -214,3 +210,8 @@ export class ConfirmationComponent {
     this.router.navigate(['/test-drive-forms']);
   }
 }
+
+
+
+
+

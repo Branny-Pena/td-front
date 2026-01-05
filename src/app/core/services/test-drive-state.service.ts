@@ -1,5 +1,5 @@
 import { Injectable, signal, computed, effect } from '@angular/core';
-import { Customer, Vehicle, CurrentLocation, TestDriveForm } from '../models';
+import { Customer, Vehicle, TestDriveForm } from '../models';
 
 export interface EvaluationData {
   purchaseProbability: number;
@@ -17,7 +17,6 @@ export interface WizardState {
   customer: Customer | null;
   vehicle: Vehicle | null;
   vehicleAutofilled: boolean;
-  location: CurrentLocation | null;
   signatureData: string | null;
   evaluation: EvaluationData | null;
   returnState: ReturnStateDraft | null;
@@ -31,7 +30,6 @@ const initialState: WizardState = {
   customer: null,
   vehicle: null,
   vehicleAutofilled: false,
-  location: null,
   signatureData: null,
   evaluation: null,
   returnState: null,
@@ -52,7 +50,6 @@ export class TestDriveStateService {
   readonly customer = computed(() => this.state().customer);
   readonly vehicle = computed(() => this.state().vehicle);
   readonly vehicleAutofilled = computed(() => this.state().vehicleAutofilled);
-  readonly location = computed(() => this.state().location);
   readonly signatureData = computed(() => this.state().signatureData);
   readonly evaluation = computed(() => this.state().evaluation);
   readonly returnState = computed(() => this.state().returnState);
@@ -63,7 +60,7 @@ export class TestDriveStateService {
 
   readonly isStep1Valid = computed(() => this.state().customer !== null);
   readonly isStep2Valid = computed(() =>
-    this.state().vehicle !== null && this.state().location !== null
+    this.state().vehicle !== null && !!this.state().vehicle?.location
   );
   readonly isStep3Valid = computed(() => this.state().signatureData !== null);
   readonly isStep4Valid = computed(() => this.state().evaluation !== null);
@@ -157,10 +154,6 @@ export class TestDriveStateService {
 
   clearVehicle(): void {
     this.state.update(s => ({ ...s, vehicle: null, vehicleAutofilled: false }));
-  }
-
-  setLocation(location: CurrentLocation): void {
-    this.state.update(s => ({ ...s, location }));
   }
 
   setSignatureData(signatureData: string | null): void {

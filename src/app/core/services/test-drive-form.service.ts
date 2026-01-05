@@ -42,9 +42,9 @@ export class TestDriveFormService {
     brand?: 'MERCEDES-BENZ' | 'ANDES MOTOR' | 'STELLANTIS';
     customerId?: string;
     vehicleId?: string;
-    locationId?: string;
     vehicleLicensePlate?: string;
     vehicleVinNumber?: string;
+    vehicleLocation?: string;
   }): Observable<TestDriveForm[]> {
     let params = new HttpParams();
     const brand = filters?.brand ?? this.themeService.getSurveyBrand();
@@ -52,9 +52,9 @@ export class TestDriveFormService {
     if (filters?.status) params = params.set('status', filters.status);
     if (filters?.customerId) params = params.set('customerId', filters.customerId);
     if (filters?.vehicleId) params = params.set('vehicleId', filters.vehicleId);
-    if (filters?.locationId) params = params.set('locationId', filters.locationId);
     if (filters?.vehicleLicensePlate) params = params.set('vehicleLicensePlate', filters.vehicleLicensePlate);
     if (filters?.vehicleVinNumber) params = params.set('vehicleVinNumber', filters.vehicleVinNumber);
+    if (filters?.vehicleLocation) params = params.set('vehicleLocation', filters.vehicleLocation);
     return this.http.get<TestDriveForm[]>(this.baseUrl, { params }).pipe(
       map((forms) => {
         return forms.map((form) => this.enrichForm(form));

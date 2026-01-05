@@ -23,7 +23,7 @@ export class HeaderComponent {
   readonly logoSrc = computed(() => {
     switch (this.themeId()) {
       case 'andes':
-        return '/logos/andes-motor-logo.svg';
+        return '/logos/andes-motor-white-logo.png';
       case 'stellantis':
         return '/logos/stellantis-logo.svg';
       case 'sap':

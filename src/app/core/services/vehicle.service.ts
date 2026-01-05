@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
-import { Vehicle, CreateVehicleDto, UpdateVehicleDto } from '../models';
+import { Vehicle, CreateVehicleDto, UpdateVehicleDto, VehicleQrRequestDto, VehicleQrResponseDto } from '../models';
 
 interface FindOrCreateVehicleResponse {
   vehicle: Vehicle;
@@ -44,6 +44,10 @@ export class VehicleService {
 
   getAll(): Observable<Vehicle[]> {
     return this.http.get<Vehicle[]>(this.baseUrl);
+  }
+
+  generateQrCode(dto: VehicleQrRequestDto): Observable<VehicleQrResponseDto> {
+    return this.http.post<VehicleQrResponseDto>(`${this.baseUrl}/qr-code`, dto);
   }
 
   update(id: string, dto: UpdateVehicleDto): Observable<Vehicle> {
