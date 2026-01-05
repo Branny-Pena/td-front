@@ -120,17 +120,17 @@
                   <div class="flex items-start justify-between gap-3">
                     <div class="min-w-0">
                       <div class="text-sm font-semibold text-gray-900 truncate">
-                        {{ r.testDriveForm.customer.firstName }} {{ r.testDriveForm.customer.lastName }}
+                        {{ r.testDriveForm.customer?.firstName || '—' }} {{ r.testDriveForm.customer?.lastName || '' }}
                       </div>
                       <div class="mt-1 text-sm text-gray-700 flex flex-wrap gap-x-3 gap-y-1">
-                        @if (r.testDriveForm.customer.email) {
+                        @if (r.testDriveForm.customer?.email) {
                           <span class="text-gray-500">
-                            Email: <span class="text-gray-800">{{ r.testDriveForm.customer.email }}</span>
+                            Email: <span class="text-gray-800">{{ r.testDriveForm.customer?.email }}</span>
                           </span>
                         }
-                        @if (r.testDriveForm.customer.phoneNumber) {
+                        @if (r.testDriveForm.customer?.phoneNumber) {
                           <span class="text-gray-500">
-                            Teléfono: <span class="text-gray-800">{{ r.testDriveForm.customer.phoneNumber }}</span>
+                            Teléfono: <span class="text-gray-800">{{ r.testDriveForm.customer?.phoneNumber }}</span>
                           </span>
                         }
                       </div>

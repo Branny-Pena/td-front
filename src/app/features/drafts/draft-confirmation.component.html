@@ -12,7 +12,7 @@
       } @else {
         @if (!vehicleConfirmed()) {
           <div class="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
-            El vehículo no está confirmado. Puedes enviar el formulario como <span class="font-semibold">pendiente</span>.
+            El vehículo no está confirmado. Puedes guardar el formulario en <span class="font-semibold">En Progreso</span>.
           </div>
         }
 
@@ -92,12 +92,20 @@
           <div>
             <h3 class="font-semibold text-gray-800 mb-2">Estado de devolución</h3>
             @if (returnState(); as rs) {
-              <dl class="grid grid-cols-2 gap-2 text-sm">
-                <dt class="text-gray-600">Kilometraje final:</dt>
-                <dd>{{ rs.finalMileage }} km</dd>
-                <dt class="text-gray-600">Nivel de combustible:</dt>
-                <dd>{{ rs.fuelLevelPercentage }}%</dd>
-              </dl>
+              <div class="mt-2">
+                <div class="text-gray-600 text-sm mb-1">Fotos:</div>
+                <div class="grid grid-cols-3 gap-2">
+                  @if (rs.mileageImageUrl) {
+                    <img [src]="rs.mileageImageUrl" alt="Foto del kilometraje" class="w-full h-20 object-cover rounded" />
+                  }
+                  @if (rs.fuelLevelImageUrl) {
+                    <img [src]="rs.fuelLevelImageUrl" alt="Foto del nivel de combustible" class="w-full h-20 object-cover rounded" />
+                  }
+                  @for (url of rs.imageUrls; track url) {
+                    <img [src]="url" alt="Foto del vehículo" class="w-full h-20 object-cover rounded" />
+                  }
+                </div>
+              </div>
             }
           </div>
         </div>

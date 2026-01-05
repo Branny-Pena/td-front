@@ -16,7 +16,7 @@ export class ThemeService {
   getBrandName(): string {
     switch (this.themeId()) {
       case 'mercedes':
-        return 'Mercedes Benz';
+        return 'Mercedes-Benz';
       case 'andes':
         return 'Andes Motor';
       case 'stellantis':

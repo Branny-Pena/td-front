@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import { WizardLayoutComponent } from '../../shared/layouts/wizard-layout/wizard-layout.component';
 import { ContentCardComponent } from '../../shared/components/content-card/content-card.component';
 import { TestDriveStateService, ReturnStateDraft } from '../../core/services/test-drive-state.service';
@@ -20,34 +20,37 @@ import { TestDriveFormService } from '../../core/services/test-drive-form.servic
 export class DraftReturnEditComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  private readonly fb = inject(FormBuilder);
   private readonly testDriveFormService = inject(TestDriveFormService);
   private readonly stateService = inject(TestDriveStateService);
   private readonly toastService = inject(MessageToastService);
   private readonly ctx = inject(DraftFormContextService);
 
-  private readonly maxPhotos = 3;
+  private readonly minVehiclePhotos = 1;
+  private readonly maxVehiclePhotos = 3;
   private readonly maxTotalPhotoBytes = 2 * 1024 * 1024;
 
   readonly isLoading = signal(false);
   readonly isPageLoading = signal(false);
   readonly draftId = signal<string>('');
 
-  readonly imageUrls = signal<string[]>([]);
-  readonly selectedFilesText = signal<string>('Seleccionar archivo');
-  readonly photoError = signal<string | null>(null);
-  readonly errorMessage = signal<string | null>(null);
+  readonly mileageImageUrl = signal<string | null>(null);
+  readonly fuelLevelImageUrl = signal<string | null>(null);
+  readonly vehicleImageUrls = signal<string[]>([]);
 
-  readonly form = this.fb.nonNullable.group({
-    finalMileage: [0, [Validators.required, Validators.min(0)]],
-    fuelLevelPercentage: [50, [Validators.required, Validators.min(0), Validators.max(100)]]
-  });
+  readonly mileageSelectedFileText = signal<string>('Seleccionar archivo');
+  readonly fuelSelectedFileText = signal<string>('Seleccionar archivo');
+  readonly vehicleSelectedFilesText = signal<string>('Seleccionar archivo');
+
+  readonly mileagePhotoError = signal<string | null>(null);
+  readonly fuelPhotoError = signal<string | null>(null);
+  readonly vehiclePhotoError = signal<string | null>(null);
+  readonly errorMessage = signal<string | null>(null);
 
   constructor() {
     this.stateService.setCurrentStep(5);
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) {
-      this.router.navigate(['/borradores']);
+      this.router.navigate(['/test-drive-forms']);
       return;
     }
     this.draftId.set(id);
@@ -58,9 +61,9 @@ export class DraftReturnEditComponent {
     this.isPageLoading.set(true);
     this.ctx.ensureLoaded(id).subscribe({
       next: (form) => {
-        if (form.status !== 'draft' && form.status !== 'pending') {
+        if (form.status !== 'draft') {
           this.toastService.show('Este formulario ya fue enviado y no se puede editar.', { title: 'Formulario' });
-          this.router.navigate(['/borradores', id, 'ver']);
+          this.router.navigate(['/test-drive-forms', id, 'ver']);
           return;
         }
         this.restoreFromState();
@@ -69,7 +72,7 @@ export class DraftReturnEditComponent {
       error: () => {
         this.isPageLoading.set(false);
         this.toastService.show('No se pudo cargar el borrador.', { title: 'Borradores' });
-        this.router.navigate(['/borradores']);
+        this.router.navigate(['/test-drive-forms']);
       }
     });
   }
@@ -77,32 +80,56 @@ export class DraftReturnEditComponent {
   private restoreFromState(): void {
     const existingReturnState = this.stateService.returnState();
     if (!existingReturnState) return;
-    this.form.patchValue({
-      finalMileage: existingReturnState.finalMileage,
-      fuelLevelPercentage: existingReturnState.fuelLevelPercentage
-    });
-    this.imageUrls.set(existingReturnState.imageUrls);
+    this.mileageImageUrl.set(existingReturnState.mileageImageUrl);
+    this.fuelLevelImageUrl.set(existingReturnState.fuelLevelImageUrl);
+    this.vehicleImageUrls.set(existingReturnState.imageUrls);
+    if (existingReturnState.mileageImageUrl) this.mileageSelectedFileText.set('Foto cargada');
+    if (existingReturnState.fuelLevelImageUrl) this.fuelSelectedFileText.set('Foto cargada');
+    if (existingReturnState.imageUrls?.length) this.vehicleSelectedFilesText.set(`${existingReturnState.imageUrls.length} archivo(s)`);
   }
 
-  onFileSelected(event: Event): void {
+  onMileageFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (!input.files) return;
 
-    this.photoError.set(null);
-    const files = Array.from(input.files);
+    this.mileagePhotoError.set(null);
+    const file = input.files[0];
+    if (!file) return;
+    this.trySetSinglePhoto(file, 'Kilometraje', this.mileageImageUrl, this.mileageSelectedFileText, this.mileagePhotoError);
+    input.value = '';
+  }
 
-    const remainingSlots = this.maxPhotos - this.imageUrls().length;
+  onFuelFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files) return;
+
+    this.fuelPhotoError.set(null);
+    const file = input.files[0];
+    if (!file) return;
+    this.trySetSinglePhoto(file, 'Combustible', this.fuelLevelImageUrl, this.fuelSelectedFileText, this.fuelPhotoError);
+    input.value = '';
+  }
+
+  onVehicleFilesSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files) return;
+
+    this.vehiclePhotoError.set(null);
+    const files = Array.from(input.files);
+    if (files.length === 0) return;
+
+    const remainingSlots = this.maxVehiclePhotos - this.vehicleImageUrls().length;
     if (remainingSlots <= 0) {
-      this.photoError.set(`Máximo ${this.maxPhotos} fotos.`);
-      this.toastService.show(`Máximo ${this.maxPhotos} fotos. Elimina una para agregar otra.`, { title: 'Fotos' });
+      this.vehiclePhotoError.set(`Máximo ${this.maxVehiclePhotos} foto adicional.`);
+      this.toastService.show(`Máximo ${this.maxVehiclePhotos} foto adicional. Elimina una para agregar otra.`, { title: 'Fotos' });
       input.value = '';
       return;
     }
 
-    const currentTotalBytes = this.getTotalBytes(this.imageUrls());
+    const currentTotalBytes = this.getTotalBytes(this.getAllPhotoUrls());
     const remainingBytes = this.maxTotalPhotoBytes - currentTotalBytes;
     if (remainingBytes <= 0) {
-      this.photoError.set('Se alcanzó el límite total de 2 MB.');
+      this.vehiclePhotoError.set('Se alcanzó el límite total de 2 MB.');
       this.toastService.show('Se alcanzó el límite total de 2 MB. Elimina una foto para agregar otra.', { title: 'Fotos' });
       input.value = '';
       return;
@@ -127,32 +154,21 @@ export class DraftReturnEditComponent {
     }
 
     if (acceptedFiles.length === 0) {
-      this.photoError.set(rejectedReasons[0] ?? 'No se pudieron agregar fotos.');
-      this.toastService.show(this.photoError()!, { title: 'Fotos' });
+      this.vehiclePhotoError.set(rejectedReasons[0] ?? 'No se pudieron agregar fotos.');
+      this.toastService.show(this.vehiclePhotoError()!, { title: 'Fotos' });
       input.value = '';
       return;
     }
 
-    if (files.length > acceptedFiles.length) {
-      this.toastService.show(
-        `Se agregaron ${acceptedFiles.length} foto(s). Máximo ${this.maxPhotos} fotos y 2 MB en total.`,
-        { title: 'Fotos' }
-      );
-    }
-
-    this.selectedFilesText.set(
-      acceptedFiles.length === 0
-        ? 'Seleccionar archivo'
-        : acceptedFiles.length === 1
-          ? acceptedFiles[0].name
-          : `${acceptedFiles.length} archivos seleccionados`
+    this.vehicleSelectedFilesText.set(
+      acceptedFiles.length === 1 ? acceptedFiles[0].name : `${acceptedFiles.length} archivos seleccionados`
     );
 
-    acceptedFiles.forEach(file => {
+    acceptedFiles.forEach((file) => {
       const reader = new FileReader();
       reader.onload = () => {
         const dataUrl = reader.result as string;
-        this.imageUrls.update(urls => [...urls, dataUrl]);
+        this.vehicleImageUrls.update((urls) => [...urls, dataUrl]);
       };
       reader.readAsDataURL(file);
     });
@@ -160,24 +176,45 @@ export class DraftReturnEditComponent {
     input.value = '';
   }
 
-  removeImage(index: number): void {
-    this.imageUrls.update(urls => urls.filter((_, i) => i !== index));
-    this.photoError.set(null);
+  removeMileagePhoto(): void {
+    this.mileageImageUrl.set(null);
+    this.mileageSelectedFileText.set('Seleccionar archivo');
+    this.mileagePhotoError.set(null);
+  }
+
+  removeFuelPhoto(): void {
+    this.fuelLevelImageUrl.set(null);
+    this.fuelSelectedFileText.set('Seleccionar archivo');
+    this.fuelPhotoError.set(null);
+  }
+
+  removeVehiclePhoto(index: number): void {
+    this.vehicleImageUrls.update(urls => urls.filter((_, i) => i !== index));
+    this.vehiclePhotoError.set(null);
   }
 
   onBack(): void {
-    this.router.navigate(['/borradores', this.draftId(), 'evaluacion']);
+    this.router.navigate(['/test-drive-forms', this.draftId(), 'evaluacion']);
   }
 
   onNext(): void {
-    if (this.form.invalid) return;
-    if (this.imageUrls().length < 1) {
-      this.photoError.set('Debe adjuntar al menos 1 foto.');
-      this.toastService.show('Debe adjuntar al menos 1 foto.', { title: 'Fotos' });
+    if (!this.mileageImageUrl()) {
+      this.mileagePhotoError.set('Debe adjuntar 1 foto del kilometraje.');
+      this.toastService.show('Debe adjuntar 1 foto del kilometraje.', { title: 'Fotos' });
       return;
     }
-    if (this.getTotalBytes(this.imageUrls()) > this.maxTotalPhotoBytes) {
-      this.photoError.set('Las fotos superan el límite total de 2 MB.');
+    if (!this.fuelLevelImageUrl()) {
+      this.fuelPhotoError.set('Debe adjuntar 1 foto del nivel de combustible.');
+      this.toastService.show('Debe adjuntar 1 foto del nivel de combustible.', { title: 'Fotos' });
+      return;
+    }
+    if (this.vehicleImageUrls().length < this.minVehiclePhotos) {
+      this.vehiclePhotoError.set(`Debe adjuntar al menos ${this.minVehiclePhotos} foto del vehículo.`);
+      this.toastService.show(`Debe adjuntar al menos ${this.minVehiclePhotos} foto del vehículo.`, { title: 'Fotos' });
+      return;
+    }
+    if (this.getTotalBytes(this.getAllPhotoUrls()) > this.maxTotalPhotoBytes) {
+      this.vehiclePhotoError.set('Las fotos superan el límite total de 2 MB.');
       this.toastService.show('Las fotos superan el límite total de 2 MB. Elimina una foto o usa imágenes más livianas.', {
         title: 'Fotos'
       });
@@ -190,25 +227,24 @@ export class DraftReturnEditComponent {
     this.isLoading.set(true);
     this.errorMessage.set(null);
 
-    const formValue = this.form.getRawValue();
     const returnState: CreateReturnStateDto = {
-      finalMileage: formValue.finalMileage,
-      fuelLevelPercentage: formValue.fuelLevelPercentage,
-      images: this.imageUrls()
+      mileageImageUrl: this.mileageImageUrl()!,
+      fuelLevelImageUrl: this.fuelLevelImageUrl()!,
+      images: this.vehicleImageUrls()
     };
 
     this.testDriveFormService.update(draftId, { returnState }).subscribe({
       next: (updated) => {
         const returnDraft: ReturnStateDraft = {
-          finalMileage: returnState.finalMileage,
-          fuelLevelPercentage: returnState.fuelLevelPercentage,
-          imageUrls: returnState.images
+          mileageImageUrl: this.mileageImageUrl(),
+          fuelLevelImageUrl: this.fuelLevelImageUrl(),
+          imageUrls: this.vehicleImageUrls()
         };
         this.stateService.setReturnState(returnDraft);
         this.stateService.setTestDriveForm(updated);
         this.isLoading.set(false);
         this.toastService.show('Devolución actualizada.', { title: 'Devolución' });
-        this.router.navigate(['/borradores', draftId, 'confirmacion']);
+        this.router.navigate(['/test-drive-forms', draftId, 'confirmacion']);
       },
       error: (err) => {
         this.isLoading.set(false);
@@ -219,6 +255,44 @@ export class DraftReturnEditComponent {
 
   private getTotalBytes(urls: string[]): number {
     return urls.reduce((sum, u) => sum + this.getDataUrlBytes(u), 0);
+  }
+
+  private trySetSinglePhoto(
+    file: File,
+    title: string,
+    targetUrl: { (): string | null; set: (value: string | null) => void },
+    targetText: { set: (value: string) => void },
+    targetError: { set: (value: string | null) => void }
+  ): void {
+    if (!file.type.startsWith('image/')) {
+      targetError.set('Tipo de archivo no permitido.');
+      this.toastService.show('Tipo de archivo no permitido.', { title });
+      return;
+    }
+
+    const currentTotalBytes = this.getTotalBytes(this.getAllPhotoUrls());
+    const existingBytes = targetUrl() ? this.getDataUrlBytes(targetUrl()!) : 0;
+    const remainingBytes = this.maxTotalPhotoBytes - (currentTotalBytes - existingBytes);
+    if (file.size > remainingBytes) {
+      targetError.set('La foto supera el límite total de 2 MB.');
+      this.toastService.show('La foto supera el límite total de 2 MB.', { title });
+      return;
+    }
+
+    targetText.set(file.name);
+    const reader = new FileReader();
+    reader.onload = () => targetUrl.set(reader.result as string);
+    reader.readAsDataURL(file);
+  }
+
+  private getAllPhotoUrls(): string[] {
+    const urls: string[] = [];
+    const mileage = this.mileageImageUrl();
+    const fuel = this.fuelLevelImageUrl();
+    if (mileage) urls.push(mileage);
+    if (fuel) urls.push(fuel);
+    urls.push(...this.vehicleImageUrls());
+    return urls;
   }
 
   private getDataUrlBytes(dataUrl: string): number {

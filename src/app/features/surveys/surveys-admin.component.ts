@@ -41,7 +41,7 @@ export class SurveysAdminComponent {
   readonly currentVersionBySurveyId = signal<Record<string, number | null>>({});
 
   readonly brandOptions = [
-    { value: 'MERCEDES-BENZ' as const, label: 'Mercedes Benz' },
+    { value: 'MERCEDES-BENZ' as const, label: 'Mercedes-Benz' },
     { value: 'ANDES MOTOR' as const, label: 'Andes Motor' },
     { value: 'STELLANTIS' as const, label: 'Stellantis' },
   ];
@@ -141,7 +141,7 @@ export class SurveysAdminComponent {
   formatBrand(brand: SurveyBrand): string {
     switch (brand) {
       case 'MERCEDES-BENZ':
-        return 'Mercedes Benz';
+        return 'Mercedes-Benz';
       case 'ANDES MOTOR':
         return 'Andes Motor';
       case 'STELLANTIS':

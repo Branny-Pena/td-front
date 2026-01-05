@@ -4,12 +4,11 @@ import { StepIndicatorComponent } from '../../components/step-indicator/step-ind
 import { BottomNavComponent } from '../../components/bottom-nav/bottom-nav.component';
 import { MessageToastContainerComponent } from '../../components/message-toast-container/message-toast-container.component';
 import { TestDriveStateService } from '../../../core/services/test-drive-state.service';
-import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-wizard-layout',
   standalone: true,
-  imports: [RouterLink, HeaderComponent, StepIndicatorComponent, BottomNavComponent, MessageToastContainerComponent],
+  imports: [HeaderComponent, StepIndicatorComponent, BottomNavComponent, MessageToastContainerComponent],
   templateUrl: './wizard-layout.component.html',
   styleUrl: './wizard-layout.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -26,8 +25,6 @@ export class WizardLayoutComponent {
   readonly chromeVariant = input<'default' | 'plain'>('default');
   readonly showStepper = input<boolean>(true);
   readonly showBottomNav = input<boolean>(true);
-  readonly showStartButton = input<boolean>(true);
-  readonly startButtonLabel = input<string>('Volver al inicio');
   readonly showBack = input<boolean>(true);
   readonly showNext = input<boolean>(true);
   readonly nextDisabled = input<boolean>(false);

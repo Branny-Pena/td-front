@@ -47,7 +47,7 @@ export class DraftEvaluationEditComponent {
     this.stateService.setCurrentStep(4);
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) {
-      this.router.navigate(['/borradores']);
+      this.router.navigate(['/test-drive-forms']);
       return;
     }
     this.draftId.set(id);
@@ -71,13 +71,13 @@ export class DraftEvaluationEditComponent {
       error: () => {
         this.isPageLoading.set(false);
         this.toastService.show('No se pudo cargar el borrador.', { title: 'Borradores' });
-        this.router.navigate(['/borradores']);
+        this.router.navigate(['/test-drive-forms']);
       }
     });
   }
 
   onBack(): void {
-    this.router.navigate(['/borradores', this.draftId(), 'firma']);
+    this.router.navigate(['/test-drive-forms', this.draftId(), 'firma']);
   }
 
   onNext(): void {
@@ -108,7 +108,7 @@ export class DraftEvaluationEditComponent {
       next: (updated) => {
         this.stateService.setTestDriveForm(updated);
         this.isLoading.set(false);
-        this.router.navigate(['/borradores', draftId, 'devolucion']);
+        this.router.navigate(['/test-drive-forms', draftId, 'devolucion']);
       },
       error: () => {
         this.isLoading.set(false);

@@ -27,6 +27,7 @@ export class ConfirmationComponent {
   readonly isLoading = signal(false);
   readonly isEmailLoading = signal(false);
   readonly errorMessage = signal<string | null>(null);
+  private readonly didSubmit = signal(false);
 
   readonly customer = this.stateService.customer;
   readonly vehicle = this.stateService.vehicle;
@@ -37,22 +38,35 @@ export class ConfirmationComponent {
   readonly testDriveForm = this.stateService.testDriveForm;
 
   readonly isSubmitted = computed(() => {
-    const status = this.testDriveForm()?.status;
-    return status === 'submitted' || status === 'pending';
+    return this.didSubmit() || this.testDriveForm()?.status === 'submitted';
   });
 
   readonly canSubmit = computed(() => {
+    const returnState = this.returnState();
     return this.customer() !== null &&
       this.vehicle() !== null &&
       this.location() !== null &&
       this.signatureData() !== null &&
       this.evaluation() !== null &&
-      this.returnState() !== null &&
+      returnState !== null &&
+      !!returnState.mileageImageUrl &&
+      !!returnState.fuelLevelImageUrl &&
+      (returnState.imageUrls?.length ?? 0) >= 1 &&
       !this.isSubmitted();
   });
 
   constructor() {
     this.stateService.setCurrentStep(6);
+  }
+
+  private toReturnStatePlaceholders(): { mileageImageUrl: string; fuelLevelImageUrl: string; images: string[] } {
+    const rs = this.returnState();
+    const vehicleCount = rs?.imageUrls?.length ?? 0;
+    return {
+      mileageImageUrl: 'image 1',
+      fuelLevelImageUrl: 'image 2',
+      images: Array.from({ length: vehicleCount }, (_, i) => `image ${i + 3}`)
+    };
   }
 
   onBack(): void {
@@ -72,7 +86,11 @@ export class ConfirmationComponent {
     const draftId = this.stateService.draftFormId();
 
     if (!customer || !vehicle || !location || !signatureData || !evaluation || !returnState) {
-      this.errorMessage.set('Missing required data. Please complete all steps.');
+      this.errorMessage.set('Faltan datos por completar. Verifica todos los pasos.');
+      return;
+    }
+    if (!returnState.mileageImageUrl || !returnState.fuelLevelImageUrl || (returnState.imageUrls?.length ?? 0) < 1) {
+      this.errorMessage.set('Faltan fotos de devolución. Vuelve al paso de devolución.');
       return;
     }
 
@@ -81,7 +99,9 @@ export class ConfirmationComponent {
 
     const obs = evaluation.observations?.trim();
 
-    const nextStatus = this.stateService.vehicleAutofilled() ? 'submitted' : 'pending';
+    const nextStatus = this.stateService.vehicleAutofilled() ? 'submitted' : 'draft';
+    const returnStatePlaceholders = this.toReturnStatePlaceholders();
+    const currentStep = nextStatus === 'submitted' ? 'FINAL_CONFIRMATION' : 'VEHICLE_RETURN_DATA';
 
     if (draftId) {
       const dto: UpdateTestDriveFormDto = {
@@ -92,17 +112,15 @@ export class ConfirmationComponent {
         purchaseProbability: evaluation.purchaseProbability,
         estimatedPurchaseDate: evaluation.estimatedPurchaseDate,
         status: nextStatus,
-        returnState: {
-          finalMileage: returnState.finalMileage,
-          fuelLevelPercentage: returnState.fuelLevelPercentage,
-          images: returnState.imageUrls
-        }
+        currentStep,
+        returnState: returnStatePlaceholders
       };
       if (obs) dto.observations = obs;
 
       this.testDriveFormService.update(draftId, dto).subscribe({
         next: (form) => {
           this.stateService.setTestDriveForm(form);
+          this.didSubmit.set(true);
           this.isLoading.set(false);
         },
         error: (err) => {
@@ -121,17 +139,15 @@ export class ConfirmationComponent {
       purchaseProbability: evaluation.purchaseProbability,
       estimatedPurchaseDate: evaluation.estimatedPurchaseDate,
       status: nextStatus,
-      returnState: {
-        finalMileage: returnState.finalMileage,
-        fuelLevelPercentage: returnState.fuelLevelPercentage,
-        images: returnState.imageUrls
-      }
+      currentStep,
+      returnState: returnStatePlaceholders
     };
     if (obs) dto.observations = obs;
 
     this.testDriveFormService.create(dto).subscribe({
       next: (form) => {
         this.stateService.setTestDriveForm(form);
+        this.didSubmit.set(true);
         this.isLoading.set(false);
       },
       error: (err) => {
@@ -195,6 +211,6 @@ export class ConfirmationComponent {
 
   startNew(): void {
     this.stateService.reset();
-    this.router.navigate(['/customer']);
+    this.router.navigate(['/test-drive-forms']);
   }
 }

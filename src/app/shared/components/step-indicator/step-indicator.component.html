@@ -9,7 +9,7 @@
       </div>
       @if (step < totalSteps()) {
         <div class="relative w-4 sm:w-8 h-1 mx-1 shrink-0 rounded-full bg-[var(--td-step-track-bg)] overflow-hidden">
-          <div class="h-full td-step-fill origin-left" [@barFill]="connectorFillState(step)"></div>
+          <div class="h-full origin-left" [@barFill]="connectorFillState(step)" [style.backgroundColor]="connectorFillColor(step)"></div>
         </div>
       }
     </div>

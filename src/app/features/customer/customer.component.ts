@@ -10,6 +10,8 @@ import { CreateUserDto } from '../../core/models';
 import { debounceTime, distinctUntilChanged, filter, Subject, takeUntil } from 'rxjs';
 import { BarcodeFormat } from '@zxing/library';
 import { BarcodeScannerDialogComponent } from '../../shared/components/barcode-scanner-dialog/barcode-scanner-dialog.component';
+import { TestDriveFormService } from '../../core/services/test-drive-form.service';
+import { ThemeService } from '../../core/services/theme.service';
 
 @Component({
   selector: 'app-customer',
@@ -29,7 +31,9 @@ export class CustomerComponent implements OnInit, OnDestroy {
   private readonly fb = inject(FormBuilder);
   private readonly stateService = inject(TestDriveStateService);
   private readonly userService = inject(UserService);
+  private readonly testDriveFormService = inject(TestDriveFormService);
   private readonly toastService = inject(MessageToastService);
+  private readonly themeService = inject(ThemeService);
   private readonly destroy$ = new Subject<void>();
 
   readonly isLoading = signal(false);
@@ -154,8 +158,48 @@ export class CustomerComponent implements OnInit, OnDestroy {
     this.userService.create(dto).subscribe({
       next: (customer) => {
         this.stateService.setUser(customer);
-        this.isLoading.set(false);
-        this.router.navigate(['/vehicle']);
+        const draftId = this.stateService.draftFormId();
+        const brand = this.themeService.getSurveyBrand() ?? undefined;
+
+        const proceed = () => {
+          this.isLoading.set(false);
+          this.router.navigate(['/vehicle']);
+        };
+
+        if (draftId) {
+          this.testDriveFormService.update(draftId, {
+            brand,
+            customerId: customer.id,
+            currentStep: 'VEHICLE_DATA'
+          }).subscribe({
+            next: (form) => {
+              this.stateService.setTestDriveForm(form);
+              proceed();
+            },
+            error: () => {
+              this.isLoading.set(false);
+              this.errorMessage.set('No se pudo guardar el progreso del formulario.');
+            }
+          });
+          return;
+        }
+
+        this.testDriveFormService.createDraft({
+          brand,
+          customerId: customer.id,
+          currentStep: 'VEHICLE_DATA',
+          status: 'draft'
+        }).subscribe({
+          next: (form) => {
+            this.stateService.setDraftFormId(form.id);
+            this.stateService.setTestDriveForm(form);
+            proceed();
+          },
+          error: () => {
+            this.isLoading.set(false);
+            this.errorMessage.set('No se pudo crear el formulario de prueba de manejo.');
+          }
+        });
       },
       error: (err) => {
         this.isLoading.set(false);

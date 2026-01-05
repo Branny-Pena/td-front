@@ -41,7 +41,7 @@ export class DraftSignatureViewComponent {
     this.stateService.setCurrentStep(3);
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) {
-      this.router.navigate(['/borradores']);
+      this.router.navigate(['/test-drive-forms']);
       return;
     }
     this.draftId.set(id);
@@ -57,17 +57,17 @@ export class DraftSignatureViewComponent {
       error: () => {
         this.isLoading.set(false);
         this.toastService.show('No se pudo cargar el borrador.', { title: 'Borradores' });
-        this.router.navigate(['/borradores']);
+        this.router.navigate(['/test-drive-forms']);
       }
     });
   }
 
   onBack(): void {
-    this.router.navigate(['/borradores', this.draftId(), 'vehiculo']);
+    this.router.navigate(['/test-drive-forms', this.draftId(), 'vehiculo']);
   }
 
   onNext(): void {
-    this.router.navigate(['/borradores', this.draftId(), 'evaluacion']);
+    this.router.navigate(['/test-drive-forms', this.draftId(), 'evaluacion']);
   }
 
   private normalizeSignature(value: string): string {

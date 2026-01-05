@@ -23,7 +23,7 @@
                 <div class="text-gray-500">
                   Cliente:
                   <span class="text-gray-900 font-medium">
-                    {{ r.testDriveForm.customer.firstName }} {{ r.testDriveForm.customer.lastName }}
+                    {{ r.testDriveForm.customer?.firstName || '—' }} {{ r.testDriveForm.customer?.lastName || '' }}
                   </span>
                 </div>
                 <div class="text-gray-500">
@@ -36,14 +36,14 @@
                   </span>
                 </div>
 
-                @if (r.testDriveForm.customer.email) {
+                @if (r.testDriveForm.customer?.email) {
                   <div class="text-gray-500">
-                    Email: <span class="text-gray-900 font-medium">{{ r.testDriveForm.customer.email }}</span>
+                    Email: <span class="text-gray-900 font-medium">{{ r.testDriveForm.customer?.email }}</span>
                   </div>
                 }
-                @if (r.testDriveForm.customer.phoneNumber) {
+                @if (r.testDriveForm.customer?.phoneNumber) {
                   <div class="text-gray-500">
-                    Teléfono: <span class="text-gray-900 font-medium">{{ r.testDriveForm.customer.phoneNumber }}</span>
+                    Teléfono: <span class="text-gray-900 font-medium">{{ r.testDriveForm.customer?.phoneNumber }}</span>
                   </div>
                 }
 

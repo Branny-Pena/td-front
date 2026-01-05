@@ -46,7 +46,7 @@ export class DraftVehicleEditComponent {
     this.stateService.setCurrentStep(2);
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) {
-      this.router.navigate(['/borradores']);
+      this.router.navigate(['/test-drive-forms']);
       return;
     }
     this.draftId.set(id);
@@ -71,9 +71,9 @@ export class DraftVehicleEditComponent {
         if (location) {
           this.form.patchValue({ locationName: location.locationName });
         }
-        if (!form || (form.status !== 'draft' && form.status !== 'pending')) {
+        if (!form || form.status !== 'draft') {
           this.toastService.show('Este formulario ya fue enviado y no se puede editar.', { title: 'Formulario' });
-          this.router.navigate(['/borradores', id, 'ver']);
+          this.router.navigate(['/test-drive-forms', id, 'ver']);
           return;
         }
         this.isPageLoading.set(false);
@@ -81,13 +81,13 @@ export class DraftVehicleEditComponent {
       error: () => {
         this.isPageLoading.set(false);
         this.toastService.show('No se pudo cargar el borrador.', { title: 'Borradores' });
-        this.router.navigate(['/borradores']);
+        this.router.navigate(['/test-drive-forms']);
       }
     });
   }
 
   onBack(): void {
-    this.router.navigate(['/borradores', this.draftId(), 'cliente']);
+    this.router.navigate(['/test-drive-forms', this.draftId(), 'cliente']);
   }
 
   onNext(): void {
@@ -138,7 +138,7 @@ export class DraftVehicleEditComponent {
         } else {
           this.toastService.show('Vehículo actualizado (sin confirmar).', { title: 'Vehículo' });
         }
-        this.router.navigate(['/borradores', draftId, 'firma']);
+        this.router.navigate(['/test-drive-forms', draftId, 'firma']);
       },
       error: (err) => {
         this.isLoading.set(false);

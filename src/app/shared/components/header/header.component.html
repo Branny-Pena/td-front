@@ -39,26 +39,29 @@
     }
   </div>
 
-  @if (showHomeLink()) {
-    <a
-      routerLink="/"
-      class="text-sm font-medium opacity-90 hover:opacity-100 focus:outline-none focus-visible:td-ring-primary rounded-[10px] px-3 py-2 transition inline-flex items-center gap-2">
-      <svg viewBox="0 0 20 20" class="w-4 h-4" aria-hidden="true">
-        <path
-          d="M11.5 5.5L7 10l4.5 4.5"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-          stroke-linecap="round"
-          stroke-linejoin="round" />
-        <path
-          d="M7 10h8"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-          stroke-linecap="round" />
-      </svg>
-      Salir
-    </a>
-  }
+  <div class="flex items-center gap-2">
+    <ng-content select="[header-actions]"></ng-content>
+    @if (showHomeLink()) {
+      <a
+        routerLink="/"
+        class="text-sm font-medium opacity-90 hover:opacity-100 focus:outline-none focus-visible:td-ring-primary rounded-[10px] px-3 py-2 transition inline-flex items-center gap-2">
+        <svg viewBox="0 0 20 20" class="w-4 h-4" aria-hidden="true">
+          <path
+            d="M11.5 5.5L7 10l4.5 4.5"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round" />
+          <path
+            d="M7 10h8"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round" />
+        </svg>
+        Salir
+      </a>
+    }
+  </div>
 </header>

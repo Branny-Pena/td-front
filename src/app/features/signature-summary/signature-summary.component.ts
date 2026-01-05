@@ -5,8 +5,8 @@ import { ContentCardComponent } from '../../shared/components/content-card/conte
 import { SignaturePadComponent } from '../../shared/components/signature-pad/signature-pad.component';
 import { TestDriveStateService } from '../../core/services/test-drive-state.service';
 import { MessageToastService } from '../../shared/services/message-toast.service';
-import { ModalDialogComponent } from '../../shared/components/modal-dialog/modal-dialog.component';
 import { TestDriveFormService } from '../../core/services/test-drive-form.service';
+import { ThemeService } from '../../core/services/theme.service';
 
 @Component({
   selector: 'app-signature-summary',
@@ -14,8 +14,7 @@ import { TestDriveFormService } from '../../core/services/test-drive-form.servic
   imports: [
     WizardLayoutComponent,
     ContentCardComponent,
-    SignaturePadComponent,
-    ModalDialogComponent
+    SignaturePadComponent
   ],
   templateUrl: './signature-summary.component.html',
   styleUrl: './signature-summary.component.css',
@@ -26,6 +25,7 @@ export class SignatureSummaryComponent {
   private readonly stateService = inject(TestDriveStateService);
   private readonly toastService = inject(MessageToastService);
   private readonly testDriveFormService = inject(TestDriveFormService);
+  private readonly themeService = inject(ThemeService);
 
   readonly customer = this.stateService.customer;
   readonly vehicle = this.stateService.vehicle;
@@ -35,8 +35,7 @@ export class SignatureSummaryComponent {
   readonly testDriveForm = this.stateService.testDriveForm;
 
   readonly isValid = computed(() => this.signatureData() !== null);
-  readonly showSaveDialog = signal(false);
-  readonly isSavingDraft = signal(false);
+  readonly isSaving = signal(false);
 
   constructor() {
     this.stateService.setCurrentStep(3);
@@ -64,63 +63,59 @@ export class SignatureSummaryComponent {
   onNext(): void {
     if (!this.isValid()) return;
 
-    const hasDraft = !!this.draftFormId() || this.testDriveForm()?.status === 'draft';
-    if (hasDraft) {
-      this.router.navigate(['/evaluation']);
-      return;
-    }
-
-    this.showSaveDialog.set(true);
-  }
-
-  onSaveDialogClosed(): void {
-    this.showSaveDialog.set(false);
-    this.isSavingDraft.set(false);
-  }
-
-  continueWithoutSaving(): void {
-    this.onSaveDialogClosed();
-    this.router.navigate(['/evaluation']);
-  }
-
-  saveAndContinue(): void {
-    if (this.isSavingDraft()) return;
-
     const customer = this.customer();
     const vehicle = this.vehicle();
     const location = this.location();
     const signatureData = this.signatureData();
+    const draftId = this.draftFormId();
 
     if (!customer || !vehicle || !location || !signatureData) {
       this.toastService.show('Faltan datos. Completa los pasos anteriores.', { title: 'Test Drive' });
-      this.onSaveDialogClosed();
       return;
     }
 
-    this.isSavingDraft.set(true);
+    if (this.isSaving()) return;
+    this.isSaving.set(true);
 
-    this.testDriveFormService
-      .createDraft({
-        customerId: customer.id,
-        vehicleId: vehicle.id,
-        locationId: location.id,
+    const brand = this.themeService.getSurveyBrand() ?? undefined;
+
+    if (draftId) {
+      this.testDriveFormService.update(draftId, {
+        brand,
         signatureData,
-        status: 'draft'
-      })
-      .subscribe({
+        currentStep: 'VALUATION_DATA'
+      }).subscribe({
         next: (form) => {
-          this.stateService.setDraftFormId(form.id);
           this.stateService.setTestDriveForm(form);
-          this.toastService.show('Progreso guardado.', { title: 'Test Drive' });
-          this.onSaveDialogClosed();
+          this.isSaving.set(false);
           this.router.navigate(['/evaluation']);
         },
         error: () => {
-          this.isSavingDraft.set(false);
-          this.toastService.show('No se pudo guardar el progreso. Puedes continuar sin guardar.', {
-            title: 'Test Drive'
-          });
+          this.isSaving.set(false);
+          this.toastService.show('No se pudo guardar la firma.', { title: 'Firma' });
         }
       });
+      return;
+    }
+
+    this.testDriveFormService.createDraft({
+      brand,
+      customerId: customer.id,
+      vehicleId: vehicle.id,
+      locationId: location.id,
+      currentStep: 'VALUATION_DATA',
+      status: 'draft'
+    }).subscribe({
+      next: (form) => {
+        this.stateService.setDraftFormId(form.id);
+        this.stateService.setTestDriveForm(form);
+        this.isSaving.set(false);
+        this.router.navigate(['/evaluation']);
+      },
+      error: () => {
+        this.isSaving.set(false);
+        this.toastService.show('No se pudo guardar el progreso.', { title: 'Firma' });
+      }
+    });
   }
 }

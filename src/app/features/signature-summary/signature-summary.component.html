@@ -1,6 +1,7 @@
 <app-wizard-layout
   [currentStep]="3"
-  [nextDisabled]="!isValid()"
+  [isLoading]="isSaving()"
+  [nextDisabled]="!isValid() || isSaving()"
   (backClick)="onBack()"
   (nextClick)="onNext()">
 
@@ -52,6 +53,24 @@
         Al firmar a continuación, reconozco que he recibido el vehículo para una prueba de manejo y acepto los términos y condiciones.
       </p>
 
+      <div class="mb-4">
+        <p class="text-sm font-medium text-gray-800">NOTAS:</p>
+        <ol class="mt-2 list-decimal pl-5 text-sm text-gray-700 space-y-2">
+          <li>
+            Usted ha elegido conducir el vehículo con placa en referencia, declarando contar con licencia de conducir habilitante vigente.
+          </li>
+          <li>
+            Usted asume las responsabilidades respecto de cualquier accidente derivado del uso del vehículo (daños propios, bienes o terceras personas); eximiendo de toda responsabilidad, sin limitación alguna, a DIVEIMPORT.
+          </li>
+          <li>
+            En caso de causar daño al vehículo, cualquiera sea la causa que se le impute, pagará a DIVEIMPORT el deducible que genere (30% del monto indemnizable, mínimo 2%) de la póliza de seguros respectiva; además de cumplir con las obligaciones de ley o que a raíz de la póliza se deriven. Renuncia, además, al ejercicio de cualquier acción civil, judicial o administrativa que pudiera emanar del uso del vehículo y que pudiera intentarse en contra de DIVEIMPORT y su personal.
+          </li>
+          <li>
+            Las partes acuerdan que cualquier diferencia en la interpretación o ejecución de este documento será resuelta de forma directa y amigable; sin embargo, si dicha diferencia no pudiera ser solucionada, dicha controversia será sometida a arbitraje ante la Cámara de Comercio de Lima.
+          </li>
+        </ol>
+      </div>
+
       @if (signatureData(); as sig) {
         <div class="border border-gray-300 rounded-lg p-4 bg-gray-50">
           <img [src]="sig" alt="Su firma" class="max-w-full h-auto" />
@@ -62,20 +81,5 @@
       }
     </app-content-card>
   </div>
-
-  <app-modal-dialog
-    [isOpen]="showSaveDialog()"
-    title="Guardar progreso"
-    rejectText="Continuar sin guardar"
-    acceptText="Guardar y continuar"
-    [acceptDisabled]="isSavingDraft()"
-    [rejectDisabled]="isSavingDraft()"
-    (closed)="onSaveDialogClosed()"
-    (reject)="continueWithoutSaving()"
-    (accept)="saveAndContinue()">
-    <p class="text-sm text-gray-800">
-      ¿Deseas guardar la información actual de la prueba de manejo para continuar más tarde?
-    </p>
-  </app-modal-dialog>
 
 </app-wizard-layout>

@@ -12,6 +12,8 @@ import { MessageToastService } from '../../shared/services/message-toast.service
 import { CreateVehicleDto, CreateLocationDto } from '../../core/models';
 import { BarcodeScannerDialogComponent } from '../../shared/components/barcode-scanner-dialog/barcode-scanner-dialog.component';
 import { BarcodeFormat } from '@zxing/library';
+import { TestDriveFormService } from '../../core/services/test-drive-form.service';
+import { ThemeService } from '../../core/services/theme.service';
 
 @Component({
   selector: 'app-vehicle',
@@ -27,7 +29,9 @@ export class VehicleComponent implements OnInit, OnDestroy {
   private readonly stateService = inject(TestDriveStateService);
   private readonly vehicleService = inject(VehicleService);
   private readonly locationService = inject(LocationService);
+  private readonly testDriveFormService = inject(TestDriveFormService);
   private readonly toastService = inject(MessageToastService);
+  private readonly themeService = inject(ThemeService);
   private readonly destroy$ = new Subject<void>();
 
   readonly isLoading = signal(false);
@@ -35,6 +39,7 @@ export class VehicleComponent implements OnInit, OnDestroy {
   readonly errorMessage = signal<string | null>(null);
   private readonly lastLookupNotificationKey = signal<string | null>(null);
   readonly isVehicleAutofilled = signal(false);
+  readonly isQrAutofilled = signal(false);
   readonly isScannerOpen = signal(false);
 
   readonly vehicleScannerFormats: BarcodeFormat[] = [
@@ -179,17 +184,15 @@ export class VehicleComponent implements OnInit, OnDestroy {
   }
 
   private setVehicleDetailsEditable(isEditable: boolean): void {
-    const makeControl = this.form.controls.make;
-    const modelControl = this.form.controls.model;
-
+    const controls = this.form.controls;
     if (isEditable) {
-      makeControl.enable({ emitEvent: false });
-      modelControl.enable({ emitEvent: false });
+      controls.make.enable({ emitEvent: false });
+      controls.model.enable({ emitEvent: false });
       return;
     }
 
-    makeControl.disable({ emitEvent: false });
-    modelControl.disable({ emitEvent: false });
+    controls.make.disable({ emitEvent: false });
+    controls.model.disable({ emitEvent: false });
   }
 
   private notifyOnce(
@@ -206,18 +209,19 @@ export class VehicleComponent implements OnInit, OnDestroy {
 
   scanQr(): void {
     this.isScannerOpen.set(true);
-    return;
-    this.form.patchValue({
-      make: 'Toyota',
-      model: 'Corolla 2024',
-      licensePlate: 'ABC-123',
-      vinNumber: '1HGBH41JXMN109186',
-      locationName: 'Lima Central'
-    });
   }
 
   onVehicleCodeScanned(value: string): void {
     const raw = value.trim();
+
+    const payload = this.tryParseQrVehiclePayload(raw);
+    if (payload) {
+      this.applyQrAutofill(payload);
+      this.toastService.show('Datos del vehículo autocompletados.', { title: 'Vehículo' });
+      this.isScannerOpen.set(false);
+      return;
+    }
+
     const extractedVin = this.parseVehicleVin(raw);
     const vinNumber = extractedVin ?? this.normalizeVin(raw);
     if (!vinNumber) return;
@@ -254,6 +258,8 @@ export class VehicleComponent implements OnInit, OnDestroy {
             ? obj['vinNumber']
             : typeof obj['vin'] === 'string'
               ? obj['vin']
+              : typeof obj['VIN'] === 'string'
+                ? obj['VIN']
               : undefined;
         const normalized = vin ? this.normalizeVin(vin) : null;
         return normalized && this.isLikelyVin(normalized) ? normalized : null;
@@ -289,6 +295,113 @@ export class VehicleComponent implements OnInit, OnDestroy {
     return /^[A-HJ-NPR-Z0-9]{17}$/.test(compact);
   }
 
+  private tryParseQrVehiclePayload(raw: string): {
+    make?: string;
+    model?: string;
+    licensePlate?: string;
+    vinNumber?: string;
+    locationName?: string;
+  } | null {
+    const trimmed = raw.trim();
+    if (!trimmed.startsWith('{')) return null;
+
+    try {
+      const obj = JSON.parse(trimmed) as Record<string, unknown>;
+      const make =
+        typeof obj['marca'] === 'string'
+          ? obj['marca']
+          : typeof obj['make'] === 'string'
+            ? obj['make']
+            : undefined;
+      const model =
+        typeof obj['modelo'] === 'string'
+          ? obj['modelo']
+          : typeof obj['model'] === 'string'
+            ? obj['model']
+            : undefined;
+      const licensePlate =
+        typeof obj['placa'] === 'string'
+          ? obj['placa']
+          : typeof obj['licensePlate'] === 'string'
+            ? obj['licensePlate']
+            : undefined;
+      const vinRaw =
+        typeof obj['vin'] === 'string'
+          ? obj['vin']
+          : typeof obj['vinNumber'] === 'string'
+            ? obj['vinNumber']
+            : undefined;
+      const vinNumber = vinRaw ? this.normalizeVin(vinRaw) : undefined;
+      const locationName =
+        typeof obj['ubicacion'] === 'string'
+          ? obj['ubicacion']
+          : typeof obj['ubicación'] === 'string'
+            ? (obj['ubicación'] as string)
+            : typeof obj['locationName'] === 'string'
+              ? obj['locationName']
+              : undefined;
+
+      const payload = {
+        make: make?.trim() || undefined,
+        model: model?.trim() || undefined,
+        licensePlate: licensePlate?.trim() || undefined,
+        vinNumber: vinNumber?.trim() || undefined,
+        locationName: locationName?.trim() || undefined
+      };
+
+      const hasAny =
+        !!payload.make || !!payload.model || !!payload.licensePlate || !!payload.vinNumber || !!payload.locationName;
+      return hasAny ? payload : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private applyQrAutofill(payload: {
+    make?: string;
+    model?: string;
+    licensePlate?: string;
+    vinNumber?: string;
+    locationName?: string;
+  }): void {
+    this.form.patchValue(
+      {
+        make: payload.make ?? this.form.controls.make.value,
+        model: payload.model ?? this.form.controls.model.value,
+        licensePlate: payload.licensePlate ?? this.form.controls.licensePlate.value,
+        vinNumber: payload.vinNumber ?? this.form.controls.vinNumber.value,
+        locationName: payload.locationName ?? this.form.controls.locationName.value
+      },
+      { emitEvent: false }
+    );
+
+    let lockedAny = false;
+    const controls = this.form.controls;
+
+    if (payload.make && payload.make.trim().length > 0) {
+      controls.make.disable({ emitEvent: false });
+      lockedAny = true;
+    }
+    if (payload.model && payload.model.trim().length > 0) {
+      controls.model.disable({ emitEvent: false });
+      lockedAny = true;
+    }
+    if (payload.licensePlate && payload.licensePlate.trim().length > 0) {
+      controls.licensePlate.disable({ emitEvent: false });
+      lockedAny = true;
+    }
+    if (payload.vinNumber && payload.vinNumber.trim().length > 0) {
+      controls.vinNumber.disable({ emitEvent: false });
+      lockedAny = true;
+    }
+    if (payload.locationName && payload.locationName.trim().length > 0) {
+      controls.locationName.disable({ emitEvent: false });
+      lockedAny = true;
+    }
+
+    if (lockedAny) this.isQrAutofilled.set(true);
+  }
+
   onNext(): void {
     if (this.form.invalid) return;
 
@@ -315,8 +428,52 @@ export class VehicleComponent implements OnInit, OnDestroy {
       next: ({ vehicle, location }) => {
         this.stateService.setVehicle(vehicle);
         this.stateService.setLocation(location);
-        this.isLoading.set(false);
-        this.router.navigate(['/signature']);
+        const draftId = this.stateService.draftFormId();
+        const brand = this.themeService.getSurveyBrand() ?? undefined;
+
+        const proceed = () => {
+          this.isLoading.set(false);
+          this.router.navigate(['/signature']);
+        };
+
+        if (draftId) {
+          this.testDriveFormService.update(draftId, {
+            brand,
+            vehicleId: vehicle.id,
+            locationId: location.id,
+            currentStep: 'SIGNATURE_DATA'
+          }).subscribe({
+            next: (form) => {
+              this.stateService.setTestDriveForm(form);
+              proceed();
+            },
+            error: () => {
+              this.isLoading.set(false);
+              this.errorMessage.set('No se pudo guardar el progreso del formulario.');
+            }
+          });
+          return;
+        }
+
+        const customerId = this.stateService.customer()?.id;
+        this.testDriveFormService.createDraft({
+          brand,
+          customerId: customerId ?? undefined,
+          vehicleId: vehicle.id,
+          locationId: location.id,
+          currentStep: 'SIGNATURE_DATA',
+          status: 'draft'
+        }).subscribe({
+          next: (form) => {
+            this.stateService.setDraftFormId(form.id);
+            this.stateService.setTestDriveForm(form);
+            proceed();
+          },
+          error: () => {
+            this.isLoading.set(false);
+            this.errorMessage.set('No se pudo crear el formulario de prueba de manejo.');
+          }
+        });
       },
       error: (err) => {
         this.isLoading.set(false);

@@ -13,8 +13,8 @@ export const routes: Routes = [
   },
   {
     path: 'inicio',
-    loadComponent: () => import('./features/start/start.component')
-      .then(m => m.StartComponent)
+    redirectTo: 'test-drive-forms',
+    pathMatch: 'full'
   },
   {
     path: 'encuestas',
@@ -42,49 +42,94 @@ export const routes: Routes = [
       .then(m => m.SurveyAdminDetailComponent)
   },
   {
-    path: 'borradores',
+    path: 'test-drive-forms',
     loadComponent: () => import('./features/drafts/drafts-list.component')
       .then(m => m.DraftsListComponent)
   },
   {
-    path: 'borradores/:id',
-    redirectTo: 'borradores/:id/cliente',
+    path: 'test-drive-forms/:id',
+    redirectTo: 'test-drive-forms/:id/cliente',
     pathMatch: 'full'
   },
   {
-    path: 'borradores/:id/cliente',
+    path: 'test-drive-forms/:id/cliente',
     loadComponent: () => import('./features/drafts/draft-customer-view.component')
       .then(m => m.DraftCustomerViewComponent)
   },
   {
-    path: 'borradores/:id/vehiculo',
+    path: 'test-drive-forms/:id/vehiculo',
     loadComponent: () => import('./features/drafts/draft-vehicle-edit.component')
       .then(m => m.DraftVehicleEditComponent)
   },
   {
-    path: 'borradores/:id/firma',
+    path: 'test-drive-forms/:id/firma',
     loadComponent: () => import('./features/drafts/draft-signature-view.component')
       .then(m => m.DraftSignatureViewComponent)
   },
   {
-    path: 'borradores/:id/evaluacion',
+    path: 'test-drive-forms/:id/evaluacion',
     loadComponent: () => import('./features/drafts/draft-evaluation-edit.component')
       .then(m => m.DraftEvaluationEditComponent)
   },
   {
-    path: 'borradores/:id/devolucion',
+    path: 'test-drive-forms/:id/devolucion',
     loadComponent: () => import('./features/drafts/draft-return-edit.component')
       .then(m => m.DraftReturnEditComponent)
   },
   {
-    path: 'borradores/:id/confirmacion',
+    path: 'test-drive-forms/:id/confirmacion',
     loadComponent: () => import('./features/drafts/draft-confirmation.component')
       .then(m => m.DraftConfirmationComponent)
   },
   {
-    path: 'borradores/:id/ver',
+    path: 'test-drive-forms/:id/ver',
     loadComponent: () => import('./features/drafts/draft-view.component')
       .then(m => m.DraftViewComponent)
+  },
+  {
+    path: 'borradores',
+    redirectTo: 'test-drive-forms',
+    pathMatch: 'full'
+  },
+  {
+    path: 'borradores/:id',
+    redirectTo: 'test-drive-forms/:id/cliente',
+    pathMatch: 'full'
+  },
+  {
+    path: 'borradores/:id/cliente',
+    redirectTo: 'test-drive-forms/:id/cliente',
+    pathMatch: 'full'
+  },
+  {
+    path: 'borradores/:id/vehiculo',
+    redirectTo: 'test-drive-forms/:id/vehiculo',
+    pathMatch: 'full'
+  },
+  {
+    path: 'borradores/:id/firma',
+    redirectTo: 'test-drive-forms/:id/firma',
+    pathMatch: 'full'
+  },
+  {
+    path: 'borradores/:id/evaluacion',
+    redirectTo: 'test-drive-forms/:id/evaluacion',
+    pathMatch: 'full'
+  },
+  {
+    path: 'borradores/:id/devolucion',
+    redirectTo: 'test-drive-forms/:id/devolucion',
+    pathMatch: 'full'
+  },
+  {
+    path: 'borradores/:id/confirmacion',
+    redirectTo: 'test-drive-forms/:id/confirmacion',
+    pathMatch: 'full'
+  },
+  {
+    path: 'borradores/:id/ver',
+    redirectTo: 'test-drive-forms/:id/ver',
+    pathMatch: 'full'
   },
   {
     path: 'customer',

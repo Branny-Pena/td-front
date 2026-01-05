@@ -8,8 +8,8 @@ export interface EvaluationData {
 }
 
 export interface ReturnStateDraft {
-  finalMileage: number;
-  fuelLevelPercentage: number;
+  mileageImageUrl: string | null;
+  fuelLevelImageUrl: string | null;
   imageUrls: string[];
 }
 
@@ -85,11 +85,47 @@ export class TestDriveStateService {
             ? ((parsed.vehicle as any).vehicle as Vehicle)
             : parsed.vehicle ?? null;
 
+        const migratedReturnState = (() => {
+          const rs = parsed.returnState as any;
+          if (!rs) return null;
+          if (typeof rs !== 'object') return null;
+
+          if ('mileageImageUrl' in rs || 'fuelLevelImageUrl' in rs) {
+            return {
+              mileageImageUrl: (rs.mileageImageUrl as string | null) ?? null,
+              fuelLevelImageUrl: (rs.fuelLevelImageUrl as string | null) ?? null,
+              imageUrls: Array.isArray(rs.imageUrls) ? (rs.imageUrls as string[]) : []
+            } satisfies ReturnStateDraft;
+          }
+
+          // Older frontend state
+          if ('odometerImageUrl' in rs || 'fuelLevelImageUrl' in rs) {
+            return {
+              mileageImageUrl: (rs.odometerImageUrl as string | null) ?? null,
+              fuelLevelImageUrl: (rs.fuelLevelImageUrl as string | null) ?? null,
+              imageUrls: Array.isArray(rs.imageUrls) ? (rs.imageUrls as string[]) : []
+            } satisfies ReturnStateDraft;
+          }
+
+          // Very old state: images packed into one array
+          if (Array.isArray(rs.imageUrls)) {
+            const all = rs.imageUrls as string[];
+            return {
+              mileageImageUrl: all[0] ?? null,
+              fuelLevelImageUrl: all[1] ?? null,
+              imageUrls: all.slice(2)
+            } satisfies ReturnStateDraft;
+          }
+
+          return null;
+        })();
+
         this.state.set({
           ...initialState,
           ...parsed,
           customer: migratedUser,
           vehicle: migratedVehicle,
+          returnState: migratedReturnState ?? null,
           vehicleAutofilled: parsed.vehicleAutofilled ?? initialState.vehicleAutofilled,
           currentStep: parsed.currentStep ?? initialState.currentStep
         });

@@ -24,13 +24,15 @@
       <div class="border-t border-gray-200"></div>
 
       <div class="px-5 py-4 flex justify-end gap-2">
-        <button
-          type="button"
-          class="px-4 py-2 text-sm font-medium td-text-primary bg-transparent rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-1 td-ring-primary disabled:text-gray-400 disabled:cursor-not-allowed"
-          [disabled]="rejectDisabled()"
-          (click)="onReject()">
-          {{ rejectText() }}
-        </button>
+        @if (rejectText()) {
+          <button
+            type="button"
+            class="px-4 py-2 text-sm font-medium td-text-primary bg-transparent rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-1 td-ring-primary disabled:text-gray-400 disabled:cursor-not-allowed"
+            [disabled]="rejectDisabled()"
+            (click)="onReject()">
+            {{ rejectText() }}
+          </button>
+        }
         <button
           type="button"
           class="td-modal-ok px-4 py-2 text-sm font-medium text-white td-bg-primary rounded-lg focus:outline-none focus:ring-1 td-ring-primary disabled:bg-gray-300 disabled:cursor-not-allowed"

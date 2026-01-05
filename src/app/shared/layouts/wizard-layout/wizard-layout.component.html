@@ -5,7 +5,9 @@
       [currentStep]="currentStep()"
       [totalSteps]="totalSteps()"
       [showLogo]="showHeaderLogo()"
-      [showHomeLink]="showHeaderHomeLink()" />
+      [showHomeLink]="showHeaderHomeLink()">
+      <ng-content select="[header-actions]"></ng-content>
+    </app-header>
   }
 
   @if (showStepper()) {
@@ -13,28 +15,6 @@
   }
 
   <main class="flex-1 p-4 pb-[calc(6rem+env(safe-area-inset-bottom))] overflow-y-auto">
-    @if (showStartButton()) {
-      <div class="w-full max-w-3xl mx-auto mb-4">
-        <a routerLink="/inicio" class="td-btn td-btn--standard inline-flex items-center">
-          <svg viewBox="0 0 20 20" class="w-4 h-4" aria-hidden="true">
-            <path
-              d="M11.5 5.5L7 10l4.5 4.5"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linecap="round"
-              stroke-linejoin="round" />
-            <path
-              d="M7 10h8"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linecap="round" />
-          </svg>
-          <span>{{ startButtonLabel() }}</span>
-        </a>
-      </div>
-    }
     <ng-content></ng-content>
   </main>
 

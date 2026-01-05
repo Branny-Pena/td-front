@@ -34,7 +34,7 @@
   animation: tdSuccessCheck 260ms ease-out 260ms both;
 }
 
-.td-status-icon--pending {
+.td-status-icon--in-progress {
   --td-status-fill: rgb(251 191 36); /* amber-400 */
   --td-status-ring: rgb(245 158 11); /* amber-500 */
 }

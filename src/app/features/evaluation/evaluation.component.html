@@ -1,6 +1,7 @@
 <app-wizard-layout
   [currentStep]="4"
-  [nextDisabled]="form.invalid"
+  [isLoading]="isLoading()"
+  [nextDisabled]="form.invalid || isLoading()"
   (backClick)="onBack()"
   (nextClick)="onNext()">
 
@@ -85,6 +86,12 @@
       </div>
 
     </form>
+
+    @if (errorMessage()) {
+      <div class="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+        {{ errorMessage() }}
+      </div>
+    }
   </app-content-card>
 
 </app-wizard-layout>

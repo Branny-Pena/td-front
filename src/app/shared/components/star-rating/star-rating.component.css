@@ -1,0 +1,17 @@
+:host {
+  display: inline-block;
+}
+
+.td-stars {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
+
+.td-star {
+  display: block;
+}
+
+.td-star path {
+  vector-effect: non-scaling-stroke;
+}

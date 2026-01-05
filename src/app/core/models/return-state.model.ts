@@ -2,13 +2,13 @@ import { Image } from './image.model';
 
 export interface ReturnState {
   id: string;
-  finalMileage: number;
-  fuelLevelPercentage: number;
+  mileageImage: Image;
+  fuelLevelImage: Image;
   images: Image[];
 }
 
 export interface CreateReturnStateDto {
-  finalMileage: number;
-  fuelLevelPercentage: number;
-  images: string[];
+  mileageImageUrl: string;
+  fuelLevelImageUrl: string;
+  images?: string[];
 }

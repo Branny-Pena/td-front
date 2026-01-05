@@ -17,7 +17,6 @@ export class LoginComponent {
   private readonly stateService = inject(TestDriveStateService);
   private readonly themeService = inject(ThemeService);
 
-  readonly year = new Date().getFullYear();
   readonly isCompanyMenuOpen = signal(false);
 
   constructor() {
@@ -34,7 +33,7 @@ export class LoginComponent {
     this.isCompanyMenuOpen.set(false);
     this.themeService.apply(themeId, { persist: true });
     this.stateService.reset();
-    this.router.navigate(['/inicio']);
+    this.router.navigate(['/test-drive-forms']);
   }
 
   @HostListener('document:keydown.escape')

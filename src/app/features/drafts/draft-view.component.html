@@ -1,6 +1,7 @@
 <app-wizard-layout
   [currentStep]="1"
   [totalSteps]="1"
+  [showStepper]="false"
   [showNext]="false"
   [backLabel]="'Volver'"
   (backClick)="onBack()">
@@ -19,123 +20,180 @@
           <div class="flex items-center justify-between gap-3 mb-4">
             <div class="min-w-0">
               <div class="text-sm font-semibold text-gray-900 truncate">
-                {{ f.customer.firstName }} {{ f.customer.lastName }}
-                <span class="text-gray-500 font-normal">· DNI {{ f.customer.dni }}</span>
+                {{ f.customer?.firstName || '—' }} {{ f.customer?.lastName || '' }}
+                @if (f.customer?.dni) {
+                  <span class="text-gray-500 font-normal">· DNI {{ f.customer?.dni }}</span>
+                }
               </div>
               <div class="text-xs text-gray-500 mt-1">
-                Creado: {{ formatDate(f.createdAt) }} · Actualizado: {{ formatDate(f.updatedAt) }}
+                Fecha de prueba de manejo: {{ formatDate(f.createdAt) }}
               </div>
             </div>
             <span
               class="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold"
-              [class.bg-gray-200]="f.status === 'draft'"
-              [class.text-gray-900]="f.status === 'draft'"
-              [class.bg-amber-100]="f.status === 'pending'"
-              [class.text-amber-900]="f.status === 'pending'"
+              [class.bg-amber-100]="f.status === 'draft'"
+              [class.text-amber-900]="f.status === 'draft'"
               [class.bg-emerald-100]="f.status === 'submitted'"
               [class.text-emerald-800]="f.status === 'submitted'">
-              {{ f.status === 'draft' ? 'Borrador' : f.status === 'pending' ? 'Pendiente' : 'Enviado' }}
+              {{ f.status === 'draft' ? 'En Progreso' : 'Finalizado' }}
             </span>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div class="rounded-lg border border-gray-200 bg-white p-4">
-              <div class="text-sm font-semibold text-gray-900 mb-2">Vehículo</div>
-              <div class="text-sm text-gray-700">
-                <div class="flex justify-between gap-3">
-                  <span class="text-gray-500">Marca</span>
-                  <span class="text-gray-900 text-right truncate">{{ f.vehicle.make }}</span>
-                </div>
-                <div class="flex justify-between gap-3 mt-1">
-                  <span class="text-gray-500">Modelo</span>
-                  <span class="text-gray-900 text-right truncate">{{ f.vehicle.model }}</span>
-                </div>
-                <div class="flex justify-between gap-3 mt-1">
-                  <span class="text-gray-500">Placa</span>
-                  <span class="text-gray-900 text-right truncate">{{ f.vehicle.licensePlate }}</span>
-                </div>
-                <div class="flex justify-between gap-3 mt-1">
-                  <span class="text-gray-500">VIN</span>
-                  <span class="text-gray-900 text-right truncate">{{ f.vehicle.vinNumber || '—' }}</span>
-                </div>
-              </div>
-            </div>
+          <div class="flex flex-wrap gap-2 mb-4">
+            <button
+              type="button"
+              class="px-3 py-1.5 text-sm rounded-full border transition-colors"
+              [class.td-bg-primary]="selectedTab() === 'form'"
+              [class.text-white]="selectedTab() === 'form'"
+              [class.border-transparent]="selectedTab() === 'form'"
+              [class.bg-white]="selectedTab() !== 'form'"
+              [class.text-gray-700]="selectedTab() !== 'form'"
+              [class.border-gray-200]="selectedTab() !== 'form'"
+              (click)="setTab('form')">
+              Formulario
+            </button>
+            <button
+              type="button"
+              class="px-3 py-1.5 text-sm rounded-full border transition-colors"
+              [class.td-bg-primary]="selectedTab() === 'survey'"
+              [class.text-white]="selectedTab() === 'survey'"
+              [class.border-transparent]="selectedTab() === 'survey'"
+              [class.bg-white]="selectedTab() !== 'survey'"
+              [class.text-gray-700]="selectedTab() !== 'survey'"
+              [class.border-gray-200]="selectedTab() !== 'survey'"
+              (click)="setTab('survey')">
+              Encuesta
+            </button>
+          </div>
 
+          @if (selectedTab() === 'survey') {
             <div class="rounded-lg border border-gray-200 bg-white p-4">
-              <div class="text-sm font-semibold text-gray-900 mb-2">Ubicación</div>
-              <div class="text-sm text-gray-700">
-                <div class="flex justify-between gap-3">
-                  <span class="text-gray-500">Local</span>
-                  <span class="text-gray-900 text-right truncate">{{ f.location.locationName }}</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="rounded-lg border border-gray-200 bg-white p-4 sm:col-span-2">
-              <div class="text-sm font-semibold text-gray-900 mb-2">Evaluación</div>
+              <div class="text-sm font-semibold text-gray-900 mb-2">Intención de compra</div>
               <div class="text-sm text-gray-700">
                 <div class="flex justify-between gap-3">
                   <span class="text-gray-500">Probabilidad</span>
-                  <span class="text-gray-900 text-right">{{ f.purchaseProbability }}%</span>
+                  <span class="text-gray-900 text-right">
+                    @if (f.purchaseProbability === null || f.purchaseProbability === undefined) { — } @else { {{ f.purchaseProbability }}% }
+                  </span>
                 </div>
                 <div class="flex justify-between gap-3 mt-1">
                   <span class="text-gray-500">Tiempo estimado de compra</span>
-                  <span class="text-gray-900 text-right truncate">{{ f.estimatedPurchaseDate }}</span>
-                </div>
-                <div class="mt-2">
-                  <div class="text-gray-500">Observaciones</div>
-                  <div class="text-gray-900 break-words whitespace-pre-wrap">{{ f.observations || '—' }}</div>
-                </div>
-
-                <div class="mt-4 pt-4 border-t border-gray-200">
-                  <div class="text-gray-500 mb-2">Firma del cliente</div>
-                  <p class="text-xs text-gray-600 mb-3">
-                    Al firmar, el cliente reconoce que recibió el vehículo para una prueba de manejo y acepta los términos y condiciones.
-                  </p>
-                  @if (f.signature?.signatureData) {
-                    <div class="flex justify-center">
-                      <img
-                        [src]="trustSignature(f.signature!.signatureData)"
-                        alt="Firma del cliente"
-                        class="border border-gray-300 rounded-lg max-w-xs bg-gray-50 p-2" />
-                    </div>
-                  } @else {
-                    <div class="text-sm text-gray-700">Sin firma registrada.</div>
-                  }
+                  <span class="text-gray-900 text-right truncate">{{ (f.estimatedPurchaseDate ?? '').trim().length ? f.estimatedPurchaseDate : '—' }}</span>
                 </div>
               </div>
             </div>
-
-            <div class="rounded-lg border border-gray-200 bg-white p-4 sm:col-span-2">
-              <div class="text-sm font-semibold text-gray-900 mb-2">Devolución</div>
-              @if (!f.returnState) {
-                <div class="text-sm text-gray-700">Sin información de devolución.</div>
-              } @else {
+          } @else {
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div class="rounded-lg border border-gray-200 bg-white p-4">
+                <div class="text-sm font-semibold text-gray-900 mb-2">Cliente</div>
                 <div class="text-sm text-gray-700">
                   <div class="flex justify-between gap-3">
-                    <span class="text-gray-500">Kilometraje final</span>
-                    <span class="text-gray-900 text-right">{{ f.returnState.finalMileage }}</span>
+                    <span class="text-gray-500">Teléfono</span>
+                    <span class="text-gray-900 text-right truncate">{{ f.customer?.phoneNumber || '—' }}</span>
                   </div>
                   <div class="flex justify-between gap-3 mt-1">
-                    <span class="text-gray-500">Combustible</span>
-                    <span class="text-gray-900 text-right">{{ f.returnState.fuelLevelPercentage }}%</span>
+                    <span class="text-gray-500">Correo</span>
+                    <span class="text-gray-900 text-right truncate">{{ f.customer?.email || '—' }}</span>
                   </div>
-                  <div class="mt-3">
-                    <div class="text-gray-500 mb-2">Fotos</div>
-                    @if (!f.returnState.images || f.returnState.images.length === 0) {
-                      <div class="text-sm text-gray-700">Sin fotos.</div>
-                    } @else {
-                      <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                        @for (img of f.returnState.images; track img.id) {
-                          <img [src]="img.url" alt="Foto del vehículo" class="w-full h-24 object-cover rounded-lg border border-gray-200" />
-                        }
+                </div>
+              </div>
+
+              <div class="rounded-lg border border-gray-200 bg-white p-4">
+                <div class="text-sm font-semibold text-gray-900 mb-2">Ubicación</div>
+                <div class="text-sm text-gray-700">
+                  <div class="flex justify-between gap-3">
+                    <span class="text-gray-500">Local</span>
+                    <span class="text-gray-900 text-right truncate">{{ f.location?.locationName || '—' }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="rounded-lg border border-gray-200 bg-white p-4">
+                <div class="text-sm font-semibold text-gray-900 mb-2">Vehículo</div>
+                <div class="text-sm text-gray-700">
+                  <div class="flex justify-between gap-3">
+                    <span class="text-gray-500">Marca</span>
+                    <span class="text-gray-900 text-right truncate">{{ f.vehicle?.make || '—' }}</span>
+                  </div>
+                  <div class="flex justify-between gap-3 mt-1">
+                    <span class="text-gray-500">Modelo</span>
+                    <span class="text-gray-900 text-right truncate">{{ f.vehicle?.model || '—' }}</span>
+                  </div>
+                  <div class="flex justify-between gap-3 mt-1">
+                    <span class="text-gray-500">Placa</span>
+                    <span class="text-gray-900 text-right truncate">{{ f.vehicle?.licensePlate || '—' }}</span>
+                  </div>
+                  <div class="flex justify-between gap-3 mt-1">
+                    <span class="text-gray-500">VIN</span>
+                    <span class="text-gray-900 text-right truncate">{{ f.vehicle?.vinNumber || '—' }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="rounded-lg border border-gray-200 bg-white p-4 sm:col-span-2">
+                <div class="text-sm font-semibold text-gray-900 mb-2">Evaluación</div>
+                <div class="text-sm text-gray-700">
+                  <div class="flex justify-between gap-3">
+                    <span class="text-gray-500">Probabilidad</span>
+                    <span class="text-gray-900 text-right">{{ f.purchaseProbability }}%</span>
+                  </div>
+                  <div class="flex justify-between gap-3 mt-1">
+                    <span class="text-gray-500">Tiempo estimado de compra</span>
+                    <span class="text-gray-900 text-right truncate">{{ f.estimatedPurchaseDate }}</span>
+                  </div>
+                  <div class="mt-2">
+                    <div class="text-gray-500">Observaciones</div>
+                    <div class="text-gray-900 break-words whitespace-pre-wrap">{{ f.observations || '—' }}</div>
+                  </div>
+
+                  <div class="mt-4 pt-4 border-t border-gray-200">
+                    <div class="text-gray-500 mb-2">Firma del cliente</div>
+                    <p class="text-xs text-gray-600 mb-3">
+                      Al firmar, el cliente reconoce que recibió el vehículo para una prueba de manejo y acepta los términos y condiciones.
+                    </p>
+                    @if (f.signature?.signatureData) {
+                      <div class="flex justify-center">
+                        <img
+                          [src]="trustSignature(f.signature!.signatureData)"
+                          alt="Firma del cliente"
+                          class="border border-gray-300 rounded-lg max-w-xs bg-gray-50 p-2" />
                       </div>
+                    } @else {
+                      <div class="text-sm text-gray-700">Sin firma registrada.</div>
                     }
                   </div>
                 </div>
-              }
+              </div>
+
+              <div class="rounded-lg border border-gray-200 bg-white p-4 sm:col-span-2">
+                <div class="text-sm font-semibold text-gray-900 mb-2">Devolución</div>
+                @if (!f.returnState) {
+                  <div class="text-sm text-gray-700">Sin información de devolución.</div>
+                } @else {
+                  <div class="text-sm text-gray-700">
+                    <div class="mt-3">
+                      <div class="text-gray-500 mb-2">Fotos</div>
+                      @if (!f.returnState.mileageImage && !f.returnState.fuelLevelImage && (!f.returnState.images || f.returnState.images.length === 0)) {
+                        <div class="text-sm text-gray-700">Sin fotos.</div>
+                      } @else {
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                          @if (f.returnState.mileageImage) {
+                            <img [src]="f.returnState.mileageImage.url" alt="Foto del kilometraje" class="w-full h-24 object-cover rounded-lg border border-gray-200" />
+                          }
+                          @if (f.returnState.fuelLevelImage) {
+                            <img [src]="f.returnState.fuelLevelImage.url" alt="Foto del nivel de combustible" class="w-full h-24 object-cover rounded-lg border border-gray-200" />
+                          }
+                          @for (img of f.returnState.images; track img.id) {
+                            <img [src]="img.url" alt="Foto del vehículo" class="w-full h-24 object-cover rounded-lg border border-gray-200" />
+                          }
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
             </div>
-          </div>
+          }
 
           <div class="flex flex-col sm:flex-row sm:flex-wrap gap-3 justify-end mt-6">
             <button type="button" class="td-btn td-btn--standard w-full sm:w-auto" (click)="generatePdf()" [disabled]="isPdfLoading()">

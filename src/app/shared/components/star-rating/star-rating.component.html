@@ -1,0 +1,28 @@
+<span class="td-stars" role="img" [style.gap.px]="gap()">
+  @for (i of stars(); track i) {
+    <svg
+      aria-hidden="true"
+      class="td-star"
+      viewBox="0 0 20 20"
+      [style.width.px]="size()"
+      [style.height.px]="size()">
+      <defs>
+        <mask [attr.id]="maskId(i)" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse">
+          <rect x="0" y="0" [attr.width]="getStarFillUnits(i)" height="20" fill="white" />
+          <rect x="0" y="0" width="20" height="20" fill="black" opacity="0" />
+        </mask>
+      </defs>
+
+      <path
+        [ngClass]="emptyClass()"
+        fill="currentColor"
+        d="M9.049 2.927a1 1 0 011.902 0l1.07 3.292a1 1 0 00.95.69h3.462a1 1 0 01.592 1.806l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292a1 1 0 01-1.538 1.118l-2.8-2.034a1 1 0 00-1.176 0l-2.8 2.034a1 1 0 01-1.538-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.8-2.034A1 1 0 012.07 6.91h3.462a1 1 0 00.95-.69l1.07-3.292Z" />
+
+      <path
+        [ngClass]="filledClass()"
+        fill="currentColor"
+        [attr.mask]="'url(#' + maskId(i) + ')'"
+        d="M9.049 2.927a1 1 0 011.902 0l1.07 3.292a1 1 0 00.95.69h3.462a1 1 0 01.592 1.806l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292a1 1 0 01-1.538 1.118l-2.8-2.034a1 1 0 00-1.176 0l-2.8 2.034a1 1 0 01-1.538-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.8-2.034A1 1 0 012.07 6.91h3.462a1 1 0 00.95-.69l1.07-3.292Z" />
+    </svg>
+  }
+</span>

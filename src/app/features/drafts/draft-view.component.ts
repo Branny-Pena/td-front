@@ -28,12 +28,13 @@ export class DraftViewComponent {
   readonly isPdfLoading = signal(false);
   readonly isEmailLoading = signal(false);
   readonly form = signal<TestDriveForm | null>(null);
+  readonly selectedTab = signal<'form' | 'survey'>('survey');
 
   constructor() {
     this.stateService.setCurrentStep(1);
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) {
-      this.router.navigate(['/borradores']);
+      this.router.navigate(['/test-drive-forms']);
       return;
     }
     this.load(id);
@@ -49,13 +50,18 @@ export class DraftViewComponent {
       error: () => {
         this.isLoading.set(false);
         this.toastService.show('No se pudo cargar el formulario.', { title: 'Formulario' });
-        this.router.navigate(['/borradores']);
+        this.router.navigate(['/test-drive-forms']);
       }
     });
   }
 
   onBack(): void {
-    this.router.navigate(['/borradores']);
+    this.router.navigate(['/test-drive-forms']);
+  }
+
+  setTab(tab: 'form' | 'survey'): void {
+    if (this.selectedTab() === tab) return;
+    this.selectedTab.set(tab);
   }
 
   formatDate(value: string): string {

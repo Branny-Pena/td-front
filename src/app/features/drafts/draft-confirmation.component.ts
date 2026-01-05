@@ -71,8 +71,8 @@ export class DraftConfirmationComponent {
     if (!returnState) {
       missing.push('Devolución');
     } else {
-      if (!Number.isFinite(returnState.finalMileage)) missing.push('Kilometraje final');
-      if (!Number.isFinite(returnState.fuelLevelPercentage)) missing.push('Nivel de combustible');
+      if (!returnState.mileageImageUrl) missing.push('Foto del kilometraje');
+      if (!returnState.fuelLevelImageUrl) missing.push('Foto del nivel de combustible');
       if (!returnState.imageUrls || returnState.imageUrls.length < 1) missing.push('Fotos del vehículo (mín. 1)');
     }
 
@@ -92,7 +92,7 @@ export class DraftConfirmationComponent {
     this.stateService.setCurrentStep(6);
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) {
-      this.router.navigate(['/borradores']);
+      this.router.navigate(['/test-drive-forms']);
       return;
     }
     this.draftId.set(id);
@@ -103,8 +103,8 @@ export class DraftConfirmationComponent {
     this.isPageLoading.set(true);
     this.ctx.ensureLoaded(id).subscribe({
       next: (form) => {
-        if (form.status !== 'draft' && form.status !== 'pending') {
-          this.router.navigate(['/borradores', id, 'ver']);
+        if (form.status !== 'draft') {
+          this.router.navigate(['/test-drive-forms', id, 'ver']);
           return;
         }
         this.isPageLoading.set(false);
@@ -112,13 +112,13 @@ export class DraftConfirmationComponent {
       error: () => {
         this.isPageLoading.set(false);
         this.toastService.show('No se pudo cargar el borrador.', { title: 'Borradores' });
-        this.router.navigate(['/borradores']);
+        this.router.navigate(['/test-drive-forms']);
       }
     });
   }
 
   onBack(): void {
-    this.router.navigate(['/borradores', this.draftId(), 'devolucion']);
+    this.router.navigate(['/test-drive-forms', this.draftId(), 'devolucion']);
   }
 
   onSubmit(): void {
@@ -142,7 +142,13 @@ export class DraftConfirmationComponent {
     this.errorMessage.set(null);
 
     const obs = evaluation.observations?.trim();
-    const nextStatus = this.vehicleConfirmed() ? 'submitted' : 'pending';
+    const nextStatus = this.vehicleConfirmed() ? 'submitted' : 'draft';
+    const vehicleCount = returnState.imageUrls?.length ?? 0;
+    const returnStatePlaceholders = {
+      mileageImageUrl: 'image 1',
+      fuelLevelImageUrl: 'image 2',
+      images: Array.from({ length: vehicleCount }, (_, i) => `image ${i + 3}`)
+    };
 
     const dto: UpdateTestDriveFormDto = {
       customerId: customer.id,
@@ -152,11 +158,7 @@ export class DraftConfirmationComponent {
       purchaseProbability: evaluation.purchaseProbability,
       estimatedPurchaseDate: evaluation.estimatedPurchaseDate,
       status: nextStatus,
-      returnState: {
-        finalMileage: returnState.finalMileage,
-        fuelLevelPercentage: returnState.fuelLevelPercentage,
-        images: returnState.imageUrls
-      }
+      returnState: returnStatePlaceholders
     };
     if (obs) dto.observations = obs;
 
@@ -164,10 +166,10 @@ export class DraftConfirmationComponent {
       next: () => {
         this.isLoading.set(false);
         this.toastService.show(
-          nextStatus === 'submitted' ? 'Formulario enviado.' : 'Formulario enviado como pendiente.',
+          nextStatus === 'submitted' ? 'Formulario finalizado.' : 'Formulario guardado en progreso.',
           { title: 'Formulario' }
         );
-        this.router.navigate(['/borradores']);
+        this.router.navigate(['/test-drive-forms']);
       },
       error: (err) => {
         this.isLoading.set(false);

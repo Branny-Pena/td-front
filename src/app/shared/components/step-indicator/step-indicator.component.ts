@@ -29,7 +29,7 @@ import { AfterViewInit, Component, ChangeDetectionStrategy, input, computed, sig
       state(
         'done',
         style({
-          backgroundColor: 'var(--td-step-fill)',
+          backgroundColor: 'var(--td-step-done-fill)',
           color: '#ffffff',
           transform: 'scale(1)'
         })
@@ -82,6 +82,10 @@ export class StepIndicatorComponent implements AfterViewInit {
     }
 
     return this.ready() ? 'filled' : 'empty';
+  }
+
+  protected connectorFillColor(step: number): string {
+    return step < this.currentStep() ? 'var(--td-step-done-fill)' : 'var(--td-step-todo-bg)';
   }
 
   protected circleAnimState(step: number): 'todo' | 'current' | 'done' {

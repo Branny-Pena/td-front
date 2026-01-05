@@ -1,6 +1,13 @@
-<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+<div class="h-full bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex flex-col">
   @if (title()) {
-    <h2 class="text-lg font-semibold text-gray-800 mb-4">{{ title() }}</h2>
+    <div class="flex items-center justify-between gap-3 mb-4">
+      <h2 class="text-lg font-semibold text-gray-800">{{ title() }}</h2>
+      <div class="shrink-0">
+        <ng-content select="[cardActions]"></ng-content>
+      </div>
+    </div>
   }
-  <ng-content></ng-content>
+  <div class="flex-1">
+    <ng-content></ng-content>
+  </div>
 </div>

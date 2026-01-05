@@ -30,7 +30,7 @@ export class ModalDialogComponent {
   readonly closeOnEscape = input(true);
 
   readonly acceptText = input('Aceptar');
-  readonly rejectText = input('Cancelar');
+  readonly rejectText = input<string | null>('Cancelar');
   readonly acceptDisabled = input(false);
   readonly rejectDisabled = input(false);
 
@@ -129,4 +129,3 @@ export class ModalDialogComponent {
     });
   }
 }
-

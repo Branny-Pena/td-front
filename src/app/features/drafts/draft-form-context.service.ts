@@ -17,9 +17,9 @@ export class DraftFormContextService {
       tap((form) => {
         this.stateService.setDraftFormId(form.id);
         this.stateService.setTestDriveForm(form);
-        this.stateService.setUser(form.customer);
-        this.stateService.setVehicle(form.vehicle);
-        this.stateService.setLocation(form.location);
+        if (form.customer) this.stateService.setUser(form.customer);
+        if (form.vehicle) this.stateService.setVehicle(form.vehicle);
+        if (form.location) this.stateService.setLocation(form.location);
         this.stateService.setSignatureData(form.signature?.signatureData ?? null);
 
         this.stateService.setEvaluation({
@@ -29,10 +29,11 @@ export class DraftFormContextService {
         });
 
         if (form.returnState) {
+          const vehicleUrls = (form.returnState.images ?? []).map((i) => i.url);
           this.stateService.setReturnState({
-            finalMileage: form.returnState.finalMileage,
-            fuelLevelPercentage: form.returnState.fuelLevelPercentage,
-            imageUrls: (form.returnState.images ?? []).map(i => i.url)
+            mileageImageUrl: form.returnState.mileageImage?.url ?? null,
+            fuelLevelImageUrl: form.returnState.fuelLevelImage?.url ?? null,
+            imageUrls: vehicleUrls
           });
         }
       })

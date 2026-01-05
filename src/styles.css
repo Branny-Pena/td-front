@@ -6,8 +6,31 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    /* Default palette (SAP Horizon-like) */
+	  :root {
+	    /* Default palette (SAP Horizon-like) */
+	    --td-primary: #0a6ed1;
+	    --td-primary-hover: #085caf;
+	    --td-primary-active: #064c8c;
+	    --td-focus-ring: rgba(10, 110, 209, 0.35);
+
+    --td-page-bg: #f7f7f7;
+    --td-page-fg: #111827;
+
+    --td-card-bg: #ffffff;
+    --td-card-fg: #111827;
+
+    --td-bar-bg: #354a5f;
+    --td-bar-fg: #ffffff;
+    --td-bar-border: rgba(255, 255, 255, 0.12);
+
+	    --td-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+	    --td-font-family-heading: var(--td-font-family);
+
+	    --td-step-fill: var(--td-primary);
+	    --td-step-done-fill: #00B52E;
+	  }
+
+	  .td-theme-sap {
     --td-primary: #0a6ed1;
     --td-primary-hover: #085caf;
     --td-primary-active: #064c8c;
@@ -23,36 +46,17 @@
     --td-bar-fg: #ffffff;
     --td-bar-border: rgba(255, 255, 255, 0.12);
 
-    --td-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+	    --td-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+	    --td-font-family-heading: var(--td-font-family);
+	    --td-step-fill: var(--td-primary);
+	    --td-step-done-fill: #00B52E;
+	  }
 
-    --td-step-fill: var(--td-primary);
-  }
-
-  .td-theme-sap {
-    --td-primary: #0a6ed1;
-    --td-primary-hover: #085caf;
-    --td-primary-active: #064c8c;
-    --td-focus-ring: rgba(10, 110, 209, 0.35);
-
-    --td-page-bg: #f7f7f7;
-    --td-page-fg: #111827;
-
-    --td-card-bg: #ffffff;
-    --td-card-fg: #111827;
-
-    --td-bar-bg: #354a5f;
-    --td-bar-fg: #ffffff;
-    --td-bar-border: rgba(255, 255, 255, 0.12);
-
-    --td-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    --td-step-fill: var(--td-primary);
-  }
-
-  .td-theme-mercedes {
-    --td-primary: #0078d6;
-    --td-primary-hover: #006bbf;
-    --td-primary-active: #005a9e;
-    --td-focus-ring: rgba(0, 120, 214, 0.35);
+	  .td-theme-mercedes {
+	    --td-primary: #0078d6;
+	    --td-primary-hover: #006bbf;
+	    --td-primary-active: #005a9e;
+	    --td-focus-ring: rgba(0, 120, 214, 0.35);
 
     --td-page-bg: #f9fafb;
     --td-page-fg: #111827;
@@ -62,33 +66,39 @@
 
     --td-bar-bg: #000000;
     --td-bar-fg: #ffffff;
-    --td-bar-border: rgba(255, 255, 255, 0.12);
+	    --td-bar-border: rgba(255, 255, 255, 0.12);
 
-    --td-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    --td-step-fill: var(--td-primary);
-  }
+	    --td-font-family: "MBCorpoS", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+	    --td-font-family-heading: "MBCorpoA", var(--td-font-family);
+	    --td-step-fill: var(--td-primary);
+	    --td-step-done-fill: #00B52E;
+	  }
 
-  .td-theme-andes {
-    --td-primary: #007bff;
-    --td-primary-hover: #006fe6;
-    --td-primary-active: #005dc2;
-    --td-focus-ring: rgba(0, 123, 255, 0.35);
+	  .td-theme-andes {
+	    /* Andes Motor brand colors */
+	    --td-primary: #002D74; /* Andes Blue (Primary) */
+	    --td-primary-hover: #002760;
+	    --td-primary-active: #001f4d;
+	    --td-focus-ring: rgba(0, 150, 214, 0.35); /* Andes Cyan (Accent) */
 
-    --td-page-bg: #ffffff;
-    --td-page-fg: #111827;
+	    --td-page-bg: #ffffff;
+	    --td-page-fg: #111827;
 
     --td-card-bg: #ffffff;
     --td-card-fg: #111827;
 
-    --td-bar-bg: #ffffff;
-    --td-bar-fg: #13216a;
-    --td-bar-border: rgba(17, 24, 39, 0.12);
+	    --td-bar-bg: #002D74;
+	    --td-bar-fg: #ffffff;
+	    --td-bar-border: rgba(255, 255, 255, 0.12);
 
-    --td-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    --td-step-fill: #0096d6;
-  }
+	    --td-font-family: "Gotham", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+	    --td-font-family-heading: var(--td-font-family);
+	    /* Stepper: keep completed steps in the filled color */
+	    --td-step-fill: #0096D6;
+	    --td-step-done-fill: #0096D6;
+	  }
 
-  .td-theme-stellantis {
+	  .td-theme-stellantis {
     --td-primary: #243882;
     --td-primary-hover: #1f3171;
     --td-primary-active: #19275b;
@@ -104,9 +114,11 @@
     --td-bar-fg: #243882;
     --td-bar-border: rgba(17, 24, 39, 0.12);
 
-    --td-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    --td-step-fill: var(--td-primary);
-  }
+	    --td-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+	    --td-font-family-heading: var(--td-font-family);
+	    --td-step-fill: var(--td-primary);
+	    --td-step-done-fill: #00B52E;
+	  }
 
   /* Stepper colors */
   .td-theme-sap,
@@ -206,6 +218,10 @@ html, body {
   height: 100%;
   margin: 0;
   font-family: var(--td-font-family);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--td-font-family-heading, var(--td-font-family));
 }
 
 @font-face {

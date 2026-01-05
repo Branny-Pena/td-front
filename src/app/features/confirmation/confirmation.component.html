@@ -66,18 +66,18 @@
         <div>
           <h3 class="font-semibold text-gray-800 mb-2">Estado de Devolución</h3>
           @if (returnState(); as rs) {
-          <dl class="grid grid-cols-2 gap-2 text-sm">
-            <dt class="text-gray-600">Kilometraje Final:</dt>
-            <dd>{{ rs.finalMileage }} km</dd>
-            <dt class="text-gray-600">Nivel de Combustible:</dt>
-            <dd>{{ rs.fuelLevelPercentage }}%</dd>
-          </dl>
-          @if (rs.imageUrls.length > 0) {
+          @if (rs.mileageImageUrl || rs.fuelLevelImageUrl || rs.imageUrls.length > 0) {
           <div class="mt-2">
-            <dt class="text-gray-600 text-sm mb-1">Fotos ({{ rs.imageUrls.length }}):</dt>
+            <dt class="text-gray-600 text-sm mb-1">Fotos:</dt>
             <div class="grid grid-cols-3 gap-2">
+              @if (rs.mileageImageUrl) {
+                <img [src]="rs.mileageImageUrl" alt="Foto del kilometraje" class="w-full h-20 object-cover rounded" />
+              }
+              @if (rs.fuelLevelImageUrl) {
+                <img [src]="rs.fuelLevelImageUrl" alt="Foto del nivel de combustible" class="w-full h-20 object-cover rounded" />
+              }
               @for (url of rs.imageUrls; track url) {
-              <img [src]="url" alt="Foto del vehÇðculo" class="w-full h-20 object-cover rounded" />
+                <img [src]="url" alt="Foto del vehículo" class="w-full h-20 object-cover rounded" />
               }
             </div>
           </div>
@@ -107,11 +107,11 @@
           <svg
             viewBox="0 0 64 64"
             class="td-status-icon w-16 h-16"
-            [class.td-status-icon--pending]="iconForm.status === 'pending'"
+            [class.td-status-icon--in-progress]="iconForm.status === 'draft'"
             aria-hidden="true">
             <circle class="td-status-icon__fill" cx="32" cy="32" r="30" />
             <circle class="td-status-icon__ring" cx="32" cy="32" r="30" />
-            @if (iconForm.status === 'pending') {
+            @if (iconForm.status === 'draft') {
               <path class="td-status-icon__glyph" d="M32 18 L32 32 L41 37" />
             } @else {
               <path class="td-status-icon__glyph" d="M20 33 L28 41 L45 24" />
@@ -121,12 +121,12 @@
       }
 
       <h2 class="text-xl font-semibold text-gray-800 mb-2">
-        {{ testDriveForm()?.status === 'pending' ? 'Formulario guardado como pendiente' : 'Formulario de Prueba de Manejo Enviado' }}
+        {{ testDriveForm()?.status === 'draft' ? 'Formulario guardado en progreso' : 'Formulario finalizado' }}
       </h2>
       <p class="text-gray-600 mb-6">
-        {{ testDriveForm()?.status === 'pending'
-          ? 'El formulario se envió como pendiente. Falta confirmar la información del vehículo.'
-          : 'Su formulario de prueba de manejo ha sido enviado exitosamente.' }}
+        {{ testDriveForm()?.status === 'draft'
+          ? 'El formulario se guardó en progreso. Falta confirmar la información del vehículo.'
+          : 'Su formulario de prueba de manejo ha sido finalizado exitosamente.' }}
       </p>
 
       @if (testDriveForm(); as form) {
@@ -138,16 +138,15 @@
           <dd
             class="uppercase font-semibold"
             [class.text-emerald-700]="form.status === 'submitted'"
-            [class.text-amber-700]="form.status === 'pending'"
-            [class.text-gray-700]="form.status === 'draft'">
-            {{ form.status === 'submitted' ? 'Enviado' : form.status === 'pending' ? 'Pendiente' : 'Borrador' }}
+            [class.text-amber-700]="form.status === 'draft'">
+            {{ form.status === 'submitted' ? 'Finalizado' : 'En Progreso' }}
           </dd>
           <dt class="text-gray-600">Vehículo:</dt>
           <dd
             class="uppercase font-semibold"
-            [class.text-amber-700]="form.status === 'pending'"
+            [class.text-amber-700]="form.status === 'draft'"
             [class.text-emerald-700]="form.status === 'submitted'">
-            {{ form.status === 'pending' ? 'Pendiente de confirmación' : 'Confirmado' }}
+            {{ form.status === 'draft' ? 'Pendiente de confirmación' : 'Confirmado' }}
           </dd>
           <dt class="text-gray-600">Creado:</dt>
           <dd>{{ form.createdAt }}</dd>

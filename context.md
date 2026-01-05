@@ -1,435 +1,214 @@
-# CONTEXT.md (td-frontend) - Codex Handoff / Continuation Guide
+# context.md (td-front) — Codex Handoff / Continuation Guide
 
-This is the single source of truth for continuing development of the Angular frontend in `test-drive-app-2/td-frontend` from any other Codex instance.
+Single source of truth to continue development of this Angular frontend repo:
+- Repo root: `/Users/branny/Desktop/TD/td-front`
+- Backend API contract: `/Users/branny/Desktop/TD/td-backend/API.md` (authoritative; backend rejects unknown fields)
 
-It consolidates:
-- Non-negotiable requirements (Spanish UI, SAP Fundamental look, brand theming, UX rules)
-- Repo structure + key components/services (with paths)
-- API usage and DTO constraints (backend rejects extra fields)
-- Wizard + drafts + surveys workflows
-
-Conflict resolution order:
-1) Backend DTO validation/contracts win (unknown fields are rejected).
-2) Current codebase conventions win over older notes.
-3) This document is newer than `CODEX_CONTEXT.md` (keep both; follow this one).
+If something here conflicts with the backend API or explicit user instructions (“exact same design/brand”), follow those instead.
 
 ---
 
-## 0) Repo snapshot
+## 1) Stack / Run
 
-Workspace root: `C:\Users\Delfos\Desktop\test-drive-app-2`
-
-- Frontend: `td-frontend/` (Angular standalone + Tailwind + Fundamental styles)
-- Backend: `td-backend/` (NestJS)
-
-Frontend important folders:
-- `td-frontend/src/app/core/` -> models/services/state/theme/interceptor
-- `td-frontend/src/app/shared/` -> reusable UI components + layout
-- `td-frontend/src/app/features/` -> wizard steps, drafts flow, surveys flow, login/start screens
-- `td-frontend/public/logos/` -> brand logos + favicon assets
-
----
-
-## 1) Tech stack / versions
-
-Frontend:
-- Angular: `^20.3.x` (standalone components, signals)
-- RxJS: `~7.8`
-- Tailwind: `^3.4.x`
-- SAP Fundamental NGX: `^0.57.5` (global styles; most UI is custom Tailwind to match Fundamental visuals)
-- ZXing scanner: `@zxing/ngx-scanner@^20.0.0` (Angular 20 compatible)
-
-Backend base URL configuration:
-- `td-frontend/src/environments/environment.ts` -> `apiBaseUrl: 'http://localhost:3001'`
-- Requests use relative URLs like `'/test-drive-forms'` and are prefixed by:
-  - `td-frontend/src/app/core/interceptors/api-base-url.interceptor.ts`
-
-Run:
-- Frontend dev: `npm start` (in `td-frontend/`)
+- Angular standalone + signals, RxJS, Tailwind, Fundamental NGX global styles.
+- Dev: `npm start`
 - Build: `npm run build`
+- API base URL: `src/environments/environment.ts` + `src/app/core/interceptors/api-base-url.interceptor.ts`
 
 ---
 
-## 2) Non-negotiables (product / UX)
+## 2) Non‑negotiables (product + UI)
 
-1) Spanish UI everywhere (labels, buttons, messages, toasts, errors).
-2) Brand theming is mandatory across the app after "login" brand selection:
-   - Mercedes Benz
-   - Andes Motor
-   - Stellantis
-3) Data visibility must be brand-scoped:
-   - If the user selected Mercedes, they must only see Mercedes surveys and Mercedes test drive forms.
-4) SAP Fundamental look-and-feel (Morning Horizon references) is required, but implemented via:
-   - Fundamental global styles (imported)
-   - Tailwind + small component CSS to match visuals precisely
-5) No duplicate submissions:
-   - If a form is already sent (submitted/pending), do not allow resubmitting as a new form by navigating back.
-6) Draft/pending/submitted rules:
-   - Backend statuses: `draft | pending | submitted`
-   - `submitted` only when vehicle info is confirmed/auto-filled (details below).
+- Spanish UI everywhere.
+- Keep the existing design system and brand styling; do not introduce a new visual language.
+- Strict brand theming after login (brand selection): Mercedes-Benz / Andes Motor / Stellantis.
+- Brand scoping: list/forms/surveys must be filtered by selected brand (`ThemeService.getSurveyBrand()`).
+- Backend strict DTO validation (`whitelist` + `forbidNonWhitelisted`): never send extra fields.
+
+Brand rule docs (non‑negotiable):
+- Andes: `andes-motor-branding.md`
+- Mercedes: `mercedes-benz-branding.md`
 
 ---
 
-## 3) Branding / theme system (dynamic palette)
+## 3) Branding / Theme tokens (implemented)
 
-### 3.1 ThemeService (source of truth)
-File: `td-frontend/src/app/core/services/theme.service.ts`
+Source of truth:
+- `src/app/core/services/theme.service.ts` (persists `td-theme` in localStorage, applies `td-theme-*` class on `<html>`)
+- `src/styles.css` (CSS variables)
 
-- Theme IDs: `sap | mercedes | andes | stellantis`
-- Stored in `localStorage` key: `td-theme`
-- `getSurveyBrand()` maps the UI theme to the backend enum string:
-  - `mercedes`/`sap` -> `MERCEDES-BENZ`
-  - `andes` -> `ANDES MOTOR`
-  - `stellantis` -> `STELLANTIS`
+Theme IDs: `sap | mercedes | andes | stellantis`
+Backend brand mapping (`ThemeService.getSurveyBrand()`):
+- `andes` -> `ANDES MOTOR`
+- `stellantis` -> `STELLANTIS`
+- `mercedes` and `sap` -> `MERCEDES-BENZ`
 
-### 3.2 CSS variables + theme classes
-File: `td-frontend/src/styles.css`
+Important tokens:
+- `--td-primary`, `--td-primary-hover`, `--td-primary-active`
+- `--td-bar-*` (header bar)
+- Stepper:
+  - `--td-step-fill` (current step)
+  - `--td-step-done-fill` (completed steps)
+  - `--td-step-todo-*` (not started)
+- Typography:
+  - `--td-font-family` (body/UI)
+  - `--td-font-family-heading` (h1..h6)
 
-Root CSS variables drive:
-- primary color (`--td-primary`) and hover/active
-- app background/card colors
-- header + bottom bar colors (`--td-bar-*`)
-- stepper colors (`--td-step-fill`, `--td-step-todo-*`, `--td-step-track-bg`)
-- typography baseline (`--td-font-family`)
-
-Theme classes are set on `<html>`:
-- `td-theme-sap`
-- `td-theme-mercedes`
-- `td-theme-andes`
-- `td-theme-stellantis`
-
-Current palette rules:
-- Mercedes: black header/bottom + primary blue `#0078d6`
-- Andes: white header/bottom; step fill uses `#0096d6`
-- Stellantis: light header/bottom `#f0f0f0`, primary `#243882`, step "todo" text is white
-
-### 3.3 Logos
-File: `td-frontend/src/app/shared/components/header/header.component.ts`
-
-- Andes: `/logos/andes-motor-logo.svg`
-- Stellantis: `/logos/stellantis-logo.svg`
-- SAP/login header: `/logos/divemotor-logo.png`
-- Mercedes uses an inline SVG icon (can be replaced later with official logo).
-
-Favicon:
-- `td-frontend/src/index.html` uses `logos/divemotor-logo.png`
+Brand‑specific changes already applied:
+- Mercedes: `--td-font-family` uses `"MBCorpoS"` and headings use `"MBCorpoA"` (fallbacks only; font files not bundled yet).
+- Andes (official colors):
+  - `--td-primary = #002D74`, accent/focus `#0096D6`
+  - Stepper current = `#0096D6`
+  - Stepper completed stays the same filled color as current (requested): `--td-step-done-fill = #0096D6`
+- Global completed-step green (requested): `--td-step-done-fill = #00B52E` for non‑Andes themes.
 
 ---
 
-## 4) Global layout pattern (WizardLayout)
+## 4) Backend model + API constraints (from `td-backend/API.md`)
 
-File: `td-frontend/src/app/shared/layouts/wizard-layout/wizard-layout.component.*`
+`TestDriveForm` (frontend model: `src/app/core/models/test-drive-form.model.ts`):
+- `status`: `draft | submitted` (UI labels: draft=“En Progreso”, submitted=“Finalizado”)
+- `brand`: `MERCEDES-BENZ | ANDES MOTOR | STELLANTIS`
+- `currentStep`: `CUSTOMER_DATA | VEHICLE_DATA | SIGNATURE_DATA | VALUATION_DATA | VEHICLE_RETURN_DATA | FINAL_CONFIRMATION`
+- Rule: if `status=submitted` backend forces `currentStep=FINAL_CONFIRMATION` (and vice-versa).
 
-Standard page structure:
-- `<app-header />` (brand bar, "Salir" link) - optional via inputs
-- `<app-step-indicator />` - optional via inputs
-- `main` content area with bottom padding to avoid overlap with fixed bottom nav
-- `<app-bottom-nav />` fixed bottom navigation - optional via inputs
-- `<app-message-toast-container />` always present
+Endpoints used (service: `src/app/core/services/test-drive-form.service.ts`):
+- `GET /test-drive-forms` (frontend always sends `brand` by default)
+- `GET /test-drive-forms/:id`
+- `POST /test-drive-forms` (create draft immediately)
+- `PATCH /test-drive-forms/:id` (autosave)
+- `GET /test-drive-forms/:id/pdf` (Blob)
+- `POST /test-drive-forms/:id/email` (no body)
 
-Key WizardLayout inputs:
-- `showHeader`, `showStepper`, `showBottomNav`, `showStartButton`
-- `chromeVariant: 'default' | 'plain'` (`plain` makes the header match page background)
+Legacy backend `"pending"` status is normalized to `"draft"` in `TestDriveFormService.enrichForm()` for safety.
 
-Bottom nav is fixed with safe-area handling:
-- `td-frontend/src/app/shared/components/bottom-nav/bottom-nav.component.html`
-
-Important: main padding uses `pb-[calc(6rem+env(safe-area-inset-bottom))]` so bottom buttons are always visible on mobile.
-
----
-
-## 5) Core state: TestDriveStateService (wizard persistence)
-
-File: `td-frontend/src/app/core/services/test-drive-state.service.ts`
-
-Signals persisted to sessionStorage (`tdWizardState:v1`):
-- `customer`, `vehicle`, `location`
-- `vehicleAutofilled` (IMPORTANT for submitted vs pending)
-- `signatureData`
-- `evaluation` (`purchaseProbability`, `estimatedPurchaseDate`, `observations`)
-- `returnState` (`finalMileage`, `fuelLevelPercentage`, `imageUrls`)
-- `testDriveForm`
-- `draftFormId`
-- `currentStep`, `previousStep` (drives stepper animation)
-
-Reset behavior:
-- `reset()` clears in-memory state and sessionStorage.
-- This MUST be called when starting a new form so old values do not leak into new sessions.
+Mock fields (frontend-only; do not send back to backend):
+- `customerValoration` and `salesExpert` are mocked in `TestDriveFormService.enrichForm()` if missing.
 
 ---
 
-## 6) Shared UI components (patterns to follow)
+## 5) Routing (start page removed)
 
-### 6.1 Buttons (Fundamental-like)
-File: `td-frontend/src/styles.css` (`@layer components`)
+Routes: `src/app/app.routes.ts`
 
-Use these classes (do not invent new ad-hoc button styles):
-- Base: `td-btn` (radius is 10px non-negotiable)
-- Standard (outline, blue text): `td-btn td-btn--standard`
-- Emphasized (solid primary): `td-btn td-btn--emphasized`
-
-### 6.2 Toasts (Fundamental message toast look)
-- Service: `td-frontend/src/app/shared/services/message-toast.service.ts`
-- Container: `td-frontend/src/app/shared/components/message-toast-container/message-toast-container.component.*`
-
-Behavior:
-- Toasts appear in the upper-right with an enter animation.
-
-### 6.3 Modal dialog (Fundamental-like)
-File: `td-frontend/src/app/shared/components/modal-dialog/modal-dialog.component.*`
-
-Functional requirements implemented:
-- Focus trap
-- ESC close
-- Overlay click close (configurable)
-- `role="dialog"` + `aria-modal`
-
-Used for confirmations (publish survey, confirm vehicle info, etc.).
-
-### 6.4 Step indicator animation
-File: `td-frontend/src/app/shared/components/step-indicator/step-indicator.component.ts`
-
-Non-negotiables:
-- Slower progressive fill left-to-right when advancing steps.
-- Avoid "spark / everything filled" on initial render by using `previousStep` and a `ready` gate.
-
-### 6.5 Combobox (searchable)
-File: `td-frontend/src/app/shared/components/combo-box/combo-box.component.*`
-
-This is a real accessible combobox:
-- Input + dropdown listbox
-- Filter as you type
-- Keyboard navigation
-- ARIA roles (`combobox`, `listbox`, `option`)
-
-If you need a dropdown that looks like the combobox but is not searchable, copy the styling pattern but keep native/select-like behavior.
-
-### 6.6 Barcode scanner dialog
-File: `td-frontend/src/app/shared/components/barcode-scanner-dialog/barcode-scanner-dialog.component.ts`
-
-Uses `@zxing/ngx-scanner` and emits scanned string via `(scanned)`.
-Used for:
-- DNI scanning (customer step)
-- VIN scanning (vehicle step) - should populate VIN and trigger vehicle lookup
-
-Note: Some Spanish strings inside this component currently have encoding corruption; if touched, rewrite them in proper UTF-8 Spanish.
-
----
-
-## 7) Main routing map
-
-File: `td-frontend/src/app/app.routes.ts`
-
-Login / start:
 - `/` -> login (brand selector)
-- `/inicio` -> start screen (two buttons + dev "Encuestas" entry)
+- `/inicio` -> redirect to `/test-drive-forms` (start page deleted)
 
-Wizard (6 steps):
-- `/customer`
-- `/vehicle`
-- `/signature`
-- `/evaluation`
-- `/return`
-- `/confirmation`
+Test drive forms list/detail:
+- `/test-drive-forms` -> list + create
+- `/test-drive-forms/:id/*` -> detail/resume routes
+- Legacy `/borradores/*` redirects to `/test-drive-forms/*`
 
-Drafts flow:
-- `/borradores` (list, filters)
-- `/borradores/:id/cliente` (view only)
-- `/borradores/:id/vehiculo` (editable, confirm vehicle register status)
-- `/borradores/:id/firma` (view only)
-- `/borradores/:id/evaluacion` (editable)
-- `/borradores/:id/devolucion` (editable)
-- `/borradores/:id/confirmacion` (final submit/update)
-- `/borradores/:id/ver` (submitted view only)
+Wizard steps:
+- `/customer` -> step 1
+- `/vehicle` -> step 2
+- `/signature` -> step 3
+- `/evaluation` -> step 4
+- `/return` -> step 5
+- `/confirmation` -> step 6
 
 Surveys:
-- `/encuestas` (admin landing)
-- `/encuestas/:surveyId` (survey detail + versions)
-- `/encuestas/version/:versionId` (tabs: Respuestas/Contenido)
-- `/encuestas/version/:versionId/revision` (publish confirmation)
-- `/encuestas/respuestas/:id` (response detail; back goes to version via query param)
-
-Public survey answering page:
-- `/survey/:id` (id can be surveyVersionId or surveyId; has fallback logic)
+- `/encuestas/*` admin
+- `/survey/:id` public answering
 
 ---
 
-## 8) API usage (frontend services)
+## 6) Current UX/Flow behavior (already implemented)
 
-### 8.1 Hard rules
-- Backend uses strict validation (`whitelist` + `forbidNonWhitelisted`): never send extra fields.
-- Prefer `getRawValue()` for disabled form controls when building DTOs.
+### 6.1 Login page
+- Benefits removed; only “Pasos” shown.
+- Footer copy (terms/permission/etc.) removed.
+- Files: `src/app/features/login/login.component.html`, `src/app/features/login/login.component.ts`
 
-### 8.2 Test drive forms
-Service: `td-frontend/src/app/core/services/test-drive-form.service.ts`
+### 6.2 Create + autosave (no “save progress” popup anymore)
+- “Nuevo test-drive” on `/test-drive-forms` creates a backend draft immediately (`POST /test-drive-forms`).
+- Each step auto-saves to backend when clicking Next (`PATCH /test-drive-forms/:id`) and advances `currentStep`.
+- Brand is included on create/update using `ThemeService.getSurveyBrand()`.
+- Core wiring:
+  - List create: `src/app/features/drafts/drafts-list.component.ts`
+  - Step saves: `src/app/features/customer/customer.component.ts`, `src/app/features/vehicle/vehicle.component.ts`, `src/app/features/signature-summary/signature-summary.component.ts`, `src/app/features/evaluation/evaluation.component.ts`, `src/app/features/vehicle-return/vehicle-return.component.ts`, `src/app/features/confirmation/confirmation.component.ts`
 
-Endpoints used:
-- `GET /test-drive-forms` with filters:
-  - `status=draft|pending|submitted`
-  - `brand=MERCEDES-BENZ|ANDES MOTOR|STELLANTIS` (frontend always sends current brand by default)
-  - `vehicleLicensePlate`, `vehicleVinNumber` (partial match)
-  - `customerId`, `vehicleId`, `locationId`
-- `GET /test-drive-forms/:id`
-- `POST /test-drive-forms` (create draft or create full, depending on DTO)
-- `PATCH /test-drive-forms/:id` (update)
-- `GET /test-drive-forms/:id/pdf` -> returns `application/pdf` as `Blob` (download)
-- `POST /test-drive-forms/:id/email` -> sends email (no body for now)
-
-Status rules:
-- New form submission:
-  - If vehicle was auto-filled from lookup -> `submitted`
-  - If vehicle was entered manually -> `pending`
-  - Source of truth: `TestDriveStateService.vehicleAutofilled()`
-  - File: `td-frontend/src/app/features/confirmation/confirmation.component.ts`
-- Draft completion submission:
-  - If `vehicle.registerStatus === 'confirmed'` -> `submitted`
-  - Else -> `pending`
-  - File: `td-frontend/src/app/features/drafts/draft-confirmation.component.ts`
-
-### 8.3 Customer / Vehicle / Location
-Services:
-- `td-frontend/src/app/core/services/customer.service.ts`
-- `td-frontend/src/app/core/services/vehicle.service.ts`
-- `td-frontend/src/app/core/services/location.service.ts`
-
-Key behavior:
-- Customer: lookup by DNI (auto-fill; toast found/not found)
-- Vehicle: lookup by license plate OR VIN:
-  - `VehicleService.getByLicensePlateOrVin(licensePlate?, vinNumber?)`
-  - Auto-fill make/model if found and disable editing
-  - If not found, clear and let user fill manually
-
-### 8.4 Surveys (versioned)
-Services:
-- `td-frontend/src/app/core/services/survey.service.ts`
-- `td-frontend/src/app/core/services/survey-version.service.ts`
-- `td-frontend/src/app/core/services/survey-response.service.ts`
-
-Backend constraints (do not break):
-- Versions become immutable after responses exist
-- Responses can be submitted once
-- Required questions must be answered
-
-Endpoints used:
-- `POST /surveys` (admin create; created in `draft` status)
-- `PATCH /surveys/:id` (publish by setting status `ready`)
-- `GET /surveys` (admin list; frontend filters by brand client-side)
-- `GET /surveys/active?brand=...` (discover active)
-- `POST /surveys/:surveyId/versions`
-- `GET /surveys/:surveyId/versions/current`
-- `GET /survey-versions/:versionId` (full structure w/ questions + options)
-- `POST /survey-versions/:versionId/questions`
-- `POST /survey-responses` (start/resume idempotent)
-- `GET /survey-responses/:id` (debug/admin detail; includes sanitized customer fields)
-- `POST /survey-responses/:responseId/answers`
-
-Brand scoping:
-- Admin survey pages and response views enforce brand === `ThemeService.getSurveyBrand()`.
+### 6.3 Resuming an in-progress form
+- List click on a `draft` loads form into wizard state (`DraftFormContextService.ensureLoaded`) and navigates based on `currentStep`.
+- Files: `src/app/features/drafts/draft-form-context.service.ts`, `src/app/features/drafts/drafts-list.component.ts`
 
 ---
 
-## 9) Wizard step requirements (functional)
+## 7) UI changes already applied (high value)
 
-### Step 1 - Cliente
-- DNI input can be scanned (barcode dialog).
-- If lookup finds client: auto-complete and toast "Cliente encontrado".
-- If not: toast requesting manual completion.
+### 7.1 Customer page
+- Input titles removed; placeholders used instead.
+- “Escanear DNI” moved next to DNI input as an icon-only button (outside the input, with spacing).
+- File: `src/app/features/customer/customer.component.html`
 
-### Step 2 - Vehiculo + Ubicacion
-File: `td-frontend/src/app/features/vehicle/vehicle.component.ts`
+### 7.2 Vehicle page
+- Input titles removed; placeholders used instead.
+- QR scan button is at the top-right of the card (same row as “Información del Vehículo” title) using a QR icon (`cardActions`).
+- Scanning QR JSON like:
+  - `{ "marca": "...", "modelo": "...", "placa": "...", "vin": "...", "ubicacion": "..." }`
+  auto-fills and disables provided fields (not editable).
+- File: `src/app/features/vehicle/vehicle.component.ts`, `src/app/features/vehicle/vehicle.component.html`
 
-Rules:
-- When user fills licensePlate OR vinNumber, call `getByLicensePlateOrVin`.
-- Vehicle found:
-  - Auto-fill make/model
-  - Disable make/model
-  - Set `TestDriveStateService.vehicleAutofilled(true)`
-  - Toast "Vehiculo encontrado"
-- Not found:
-  - Ask via toast to complete manually
-  - Ensure make/model are cleared if previously auto-filled and now no longer found
-- VIN scan:
-  - Scan must populate VIN and trigger lookup even if VIN is not 17 chars (VIN validity is not used as a blocker).
+### 7.3 Scanner dialog (camera component)
+- Only “Cerrar” button exists; secondary/cancel button removed.
+- Files: `src/app/shared/components/barcode-scanner-dialog/*`
 
-### Step 3 - Firma
-- Signature is stored as base64 image string:
-  - Backend may send full data URL: `data:image/png;base64,...`
-  - Or raw base64; frontend normalizes when displaying
-- Summary cards must show persisted customer/vehicle data and not be empty when navigating back and forth (state stored in `TestDriveStateService`).
+### 7.4 Return page photos (mandatory)
+- Return requires:
+  - 1 mileage photo (required)
+  - 1 fuel-level photo (required)
+  - 1–3 vehicle photos (required, total max 2MB)
+- File: `src/app/features/vehicle-return/vehicle-return.component.ts`
 
-After signature, the flow includes a "save progress" modal in the wizard (draft creation/update). Keep this behavior.
+### 7.5 Confirmation page (temporary image placeholders)
+- IMPORTANT TEMP BEHAVIOR: request keeps the same shape, but instead of sending base64 image data, sends placeholders: `"image 1"`, `"image 2"`, etc.
+- File: `src/app/features/confirmation/confirmation.component.ts` (`toReturnStatePlaceholders`)
+- Must be reverted later when backend is ready.
 
-### Step 4 - Evaluacion
-- `observations` is optional; no min length, max length 255
-- `estimatedPurchaseDate` is a string dropdown with values:
-  - `1 mes`
-  - `1 a 3 meses`
-  - `Mas de 3 meses`
-- Number questions use the custom slider look (same as purchase probability).
-
-### Step 5 - Devolucion (ReturnState)
-File: `td-frontend/src/app/features/vehicle-return/vehicle-return.component.ts`
-
-Photos requirements:
-- Min 1 photo
-- Max 3 photos
-- Max total size = 2MB combined (not per photo)
-- Stored as data URLs in `returnState.imageUrls`
-- UI uses a custom "Fundamental-like" file upload (two-part control) with Spanish labels.
-
-### Step 6 - Confirmacion
-File: `td-frontend/src/app/features/confirmation/confirmation.component.ts`
-
-Rules:
-- Once submitted/pending, do not allow going back to resubmit as a new form.
-- PDF download calls `/test-drive-forms/:id/pdf` and triggers browser download.
-- Email button calls `/test-drive-forms/:id/email` (no body) and shows toast.
+### 7.6 Signature page legal notes
+- Signature step includes an enumerated “NOTAS” legal/informative block (Spanish) above/near signature.
+- Files: `src/app/features/signature-summary/signature-summary.component.html`
 
 ---
 
-## 10) Drafts flow (edit vs view)
+## 8) Test drive forms list + submitted detail (current UI)
 
-List page:
-- `td-frontend/src/app/features/drafts/drafts-list.component.ts`
-- Filter statuses on the frontend: `all | draft | pending | submitted`
-- Clicking:
-  - `submitted` -> view mode (`/borradores/:id/ver`)
-  - `draft/pending` -> resume flow starting at `/borradores/:id/cliente`
+### 8.1 List (`/test-drive-forms`)
+- Component: `src/app/features/drafts/drafts-list.component.ts/.html`
+- Default filter: `draft` (En Progreso)
+- `draft` sorting: oldest -> newest by `updatedAt || createdAt`
+- Card layout:
+  - Line 1: customer name + status pill
+  - Line 2:
+    - `draft`: progress mini-stepper (6 steps), with tooltip “Falta: …”
+    - `submitted`: show “Intención de compra” with `{purchaseProbability}%` and `{estimatedPurchaseDate}`; do not show stars
+  - Shows `salesExpert` (mocked if missing), phone, location, and date footer
 
-Draft context loader:
-- `td-frontend/src/app/features/drafts/draft-form-context.service.ts`
-- Loads full form into wizard state, including signature + evaluation + return images.
+Mini-stepper rules (implemented):
+- Completed: `--td-step-done-fill` (green `#00B52E` globally; Andes uses filled color)
+- Current: `--td-step-fill` (brand)
+- Not started: gray (`--td-step-todo-bg`)
+- Not-started steps are not clickable
+- Step numbers are always white
+- Not-started connector segments match the not-started circle color
 
-Last step submission:
-- `td-frontend/src/app/features/drafts/draft-confirmation.component.ts`
-- "Enviar formulario" is always enabled, but must show missing items text if incomplete.
-- If vehicle not confirmed, submission updates to `pending`, otherwise `submitted`.
-
-Signature rendering on drafts:
-- Signature data lives under `form.signature.signatureData`
-- It is a base64 image string (often already a full data URL)
-
----
-
-## 11) Known issues / maintenance notes
-
-1) Encoding (mojibake):
-   - Several templates show corrupted Spanish characters (e.g., "sesi...", "Veh...").
-   - When touching those files, rewrite the strings in proper UTF-8 Spanish.
-2) Angular template warnings like NG8107 (optional chaining on non-null types):
-   - Fix by adjusting types or removing unnecessary `?.` in templates.
-3) Survey admin uses client-side brand filtering for `GET /surveys` (backend does not filter there).
-   - Acceptable for now; backend brand filtering would be a future optimization.
+### 8.2 Submitted form detail (`/test-drive-forms/:id/ver`)
+- Component: `src/app/features/drafts/draft-view.component.ts/.html`
+- No stepper at top.
+- Toggle: “Formulario” / “Encuesta”
+  - Default selected: “Encuesta”
+  - For now, “Encuesta” shows purchase intention fields (probability + intended time). (Stars removed.)
 
 ---
 
-## 12) Where to start when continuing work
+## 9) “Where to edit what”
 
-If you need to work on...
-- Brand palette / UI chrome: `td-frontend/src/styles.css`, `td-frontend/src/app/core/services/theme.service.ts`, `td-frontend/src/app/shared/components/header/header.component.*`
-- Wizard flow / persistence: `td-frontend/src/app/core/services/test-drive-state.service.ts`, `td-frontend/src/app/shared/layouts/wizard-layout/wizard-layout.component.*`
-- Vehicle lookup + scanner: `td-frontend/src/app/features/vehicle/vehicle.component.ts`, `td-frontend/src/app/shared/components/barcode-scanner-dialog/*`
-- Draft submission: `td-frontend/src/app/features/drafts/draft-confirmation.component.ts`
-- Surveys admin: `td-frontend/src/app/features/surveys/*`
-- Survey public answering: `td-frontend/src/app/features/survey-public/*`
+- Theme/branding tokens: `src/styles.css`, `src/app/core/services/theme.service.ts`
+- App routes: `src/app/app.routes.ts`
+- Test drive forms API service: `src/app/core/services/test-drive-form.service.ts`
+- Wizard state: `src/app/core/services/test-drive-state.service.ts`
+- Stepper: `src/app/shared/components/step-indicator/*`
+- List/detail pages: `src/app/features/drafts/*`
+- Scanner dialog: `src/app/shared/components/barcode-scanner-dialog/*`
+- Surveys admin/public: `src/app/features/surveys/*`, `src/app/features/survey-public/*`
 
